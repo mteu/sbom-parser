@@ -11,7 +11,7 @@
 
 </div>
 
-Type-safe CycloneDX SBOM (Software Bill of Materials) parser for PHP 8.3+ with comprehensive validation. Supports [CycloneDX 1.4+ specifications](https://github.com/CycloneDX/specification) including components, vulnerabilities, and metadata with full immutable entity design using Valinor for type mapping.
+CycloneDX SBOM (Software Bill of Materials) parser for PHP 8.3+. Supports [CycloneDX 1.4+ specifications](https://github.com/CycloneDX/specification) including components, vulnerabilities, and metadata with full immutable entity design using Valinor for type mapping.
 
 ## ⚡️ Quick Start
 ```php
