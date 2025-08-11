@@ -37,8 +37,8 @@ final readonly class Compositions
         public ?array $assemblies = null,
         /** @var string[]|null */
         public ?array $dependencies = null,
-        /** @var mixed Digital signature */
-        public mixed $signature = null,
+        /** @var array<string, string|int|bool|array<string, string>>|string|null Digital signature */
+        public array|string|null $signature = null,
     ) {
     }
 

@@ -53,8 +53,8 @@ final readonly class Service
         public ?ReleaseNotes $releaseNotes = null,
         /** @var Property[]|null */
         public ?array $properties = null,
-        /** @var mixed Digital signature */
-        public mixed $signature = null,
+        /** @var array<string, string|int|bool|array<string, string>>|string|null Digital signature */
+        public array|string|null $signature = null,
     ) {
     }
 

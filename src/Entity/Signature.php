@@ -35,8 +35,8 @@ namespace mteu\SbomParser\Entity;
 final readonly class Signature
 {
     public function __construct(
-        /** @var mixed Raw signature data - flexible to support various signature formats */
-        public mixed $signatureData,
+        /** @var array<string, string|int|bool|array<string, string>>|string Raw signature data - flexible to support various signature formats */
+        public array|string $signatureData,
     ) {
     }
 }
