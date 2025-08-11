@@ -1,6 +1,6 @@
 # CycloneDx Parser
 
-Type-safe parser for CycloneDX 1.4+ Software Bill of Materials files with comprehensive validation and modern PHP architecture. Full specification compliance including services, compositions, and digital signatures.
+Type-safe parser for CycloneDX 1.4+ Software Bill of Materials files with comprehensive validation and modern PHP architecture.
 
 ## Quick Start
 
