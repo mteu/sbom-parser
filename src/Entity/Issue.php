@@ -21,35 +21,32 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace mteu\SbomParser\Entity\Vulnerability;
+namespace mteu\SbomParser\Entity;
 
 /**
- * VulnerabilityAffectedVersions based on CycloneDX 1.4+ specification.
+ * Issue entity for release notes.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  */
-final readonly class VulnerabilityAffectedVersions
+final readonly class Issue
 {
     public function __construct(
-        public ?string $version = null,
-        public ?string $range = null,
-        public ?AffectedStatus $status = null,
+        public string $type,
+        public string $id,
+        public ?string $name = null,
+        public ?string $description = null,
+        public ?string $source = null,
+        /** @var string[]|null */
+        public ?array $references = null,
     ) {
     }
 
-    public function getVersion(): ?string
+    /**
+     * @return string[]
+     */
+    public function getReferences(): array
     {
-        return $this->version;
-    }
-
-    public function getRange(): ?string
-    {
-        return $this->range;
-    }
-
-    public function getStatus(): ?AffectedStatus
-    {
-        return $this->status;
+        return $this->references ?? [];
     }
 }

@@ -21,35 +21,24 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace mteu\SbomParser\Entity\Vulnerability;
+namespace mteu\SbomParser\Entity;
 
 /**
- * VulnerabilityAffectedVersions based on CycloneDX 1.4+ specification.
+ * SWID (Software Identification) Tag entity.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  */
-final readonly class VulnerabilityAffectedVersions
+final readonly class SwidTag
 {
     public function __construct(
+        public string $tagId,
+        public string $name,
         public ?string $version = null,
-        public ?string $range = null,
-        public ?AffectedStatus $status = null,
+        public ?int $tagVersion = null,
+        public ?bool $patch = null,
+        public ?Attachment $text = null,
+        public ?string $url = null,
     ) {
-    }
-
-    public function getVersion(): ?string
-    {
-        return $this->version;
-    }
-
-    public function getRange(): ?string
-    {
-        return $this->range;
-    }
-
-    public function getStatus(): ?AffectedStatus
-    {
-        return $this->status;
     }
 }

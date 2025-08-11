@@ -23,11 +23,8 @@ $bom = $parser->parseFromArray($data);
 
 ## Core Components
 
-### Parser Class: `CycloneDxParser`
-
-Location: `src/Parser/CycloneDxParser.php`
-
-Modern SBOM parser implementing the `Parser` interface with comprehensive validation:
+### Parser Class: [`CycloneDxParser`](../src/Parser/CycloneDxParser.php)
+SBOM parser implementing the `Parser` interface with comprehensive validation:
 
 - `parseFromFile(string $filePath): Bom` - Parse from absolute file path with security validation
 - `parseFromJson(string $json): Bom` - Parse from JSON string with type validation
@@ -36,10 +33,7 @@ Modern SBOM parser implementing the `Parser` interface with comprehensive valida
 - `isValidSbomJson(string $json): bool` - Validate JSON without full parsing
 - `isValidSbomArray(array $data): bool` - Validate array without full parsing
 
-### Main Entity: `Bom`
-
-Location: `src/Entity/Bom.php`
-
+### Main Entity: [`Bom`](../src/Entity/Bom.php)
 Represents the complete SBOM with helper methods:
 
 ```php
@@ -52,23 +46,22 @@ $bom->getSerialNumber();  // Optional serial number
 $components = $bom->getComponents();        // Direct components
 $allComponents = $bom->getAllComponents();  // Including nested
 
-// Get vulnerabilities
+// Get vulnerabilities and services
 $vulnerabilities = $bom->getVulnerabilities();
+$services = $bom->getServices();
 
 // Find specific components
 $libraries = $bom->findComponentsByType(ComponentType::LIBRARY);
 $component = $bom->findComponentByPurl('pkg:npm/lodash@4.17.21');
 ```
 
-### Component Entity: `Component`
-
-Location: `src/Entity/Component.php`
+### Component Entity: [`Component`](../src/Entity/Component.php)
 
 Represents individual software components:
 
 ```php
-$component->getName();           // Component name
-$component->getVersion();        // Version string
+$component->getName();          // Component name
+$component->getVersion();       // Version string
 $component->getType();          // ComponentType enum
 $component->getPackageUrl();    // PURL if available
 $component->getLicenses();      // Array of License objects
@@ -76,9 +69,9 @@ $component->getHashes();        // Array of Hash objects
 $component->getComponents();    // Nested components
 ```
 
-## Validation
+## File Validation
 
-The parser includes comprehensive validation:
+The parser includes validation:
 
 ```php
 // Validate before parsing
@@ -109,113 +102,3 @@ try {
     error_log('SBOM parsing failed: ' . $e->getMessage());
 }
 ```
-
-## Working with Components
-
-```php
-foreach ($bom->getAllComponents() as $component) {
-    printf("%-30s %s\n", $component->getName(), $component->getVersion());
-
-    // Check component type
-    if ($component->getType() === ComponentType::LIBRARY) {
-        echo "  Library component\n";
-    }
-
-    // Get licenses
-    foreach ($component->getLicenses() as $license) {
-        if ($license->getSpdxId()) {
-            echo "  License: " . $license->getSpdxId() . "\n";
-        }
-    }
-
-    // Get package URL (for ecosystem identification)
-    if ($component->getPackageUrl()) {
-        echo "  PURL: " . $component->getPackageUrl() . "\n";
-    }
-}
-```
-
-## Working with Vulnerabilities
-
-```php
-foreach ($bom->getVulnerabilities() as $vulnerability) {
-    echo "Vulnerability: " . $vulnerability->getId() . "\n";
-    echo "Description: " . $vulnerability->getDescription() . "\n";
-
-    // Get severity rating
-    $highestRating = $vulnerability->getHighestSeverityRating();
-    if ($highestRating) {
-        echo "Severity: " . $highestRating->getSeverity() . "\n";
-        echo "Score: " . $highestRating->getScore() . "\n";
-    }
-
-    // Get affected components
-    foreach ($vulnerability->getAffects() as $affects) {
-        echo "Affects: " . $affects->getRef() . "\n";
-        foreach ($affects->getVersions() as $versionRange) {
-            echo "  Version: " . $versionRange->getVersion() . "\n";
-            echo "  Range: " . $versionRange->getRange() . "\n";
-        }
-    }
-}
-```
-
-## Advanced Usage
-
-### Component Filtering
-
-```php
-// Filter components by analyzable status
-$analyzableComponents = array_filter(
-    $bom->getAllComponents(),
-    fn(Component $c) => $c->getType() !== ComponentType::OPERATING_SYSTEM
-        && $c->getVersion() !== null
-        && !str_contains($c->getVersion(), '*')
-);
-
-// Find components by ecosystem
-$npmComponents = array_filter(
-    $bom->getAllComponents(),
-    fn(Component $c) => str_starts_with($c->getPackageUrl() ?? '', 'pkg:npm/')
-);
-```
-
-### Metadata Access
-
-```php
-$metadata = $bom->getMetadata();
-if ($metadata) {
-    echo "Generated: " . $metadata->getTimestamp()?->format('Y-m-d H:i:s') . "\n";
-
-    foreach ($metadata->getTools() as $tool) {
-        echo "Tool: " . $tool->name . " v" . $tool->version . "\n";
-    }
-}
-
-## Security Features
-
-The parser includes security validation for file paths:
-
-- Absolute path requirement
-- Web-accessible directory detection
-- Directory traversal prevention
-- File extension validation
-
-## Supported Formats
-
-- **CycloneDX 1.4+** - Primary support
-- **CycloneDX 1.5** - Full support
-- **CycloneDX 1.6** - Full support with latest features
-- **JSON format** - Primary format support
-
-## Type Safety
-
-The parser uses **Valinor** for type-safe mapping with:
-
-- Automatic enum conversion
-- Date format support
-- Flexible type casting
-- Comprehensive validation
-- Detailed error reporting
-
-All entities are `final readonly` classes ensuring immutability and maximum type safety.

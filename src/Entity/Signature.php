@@ -21,35 +21,22 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace mteu\SbomParser\Entity\Vulnerability;
+namespace mteu\SbomParser\Entity;
 
 /**
- * VulnerabilityAffectedVersions based on CycloneDX 1.4+ specification.
+ * Digital signature entity for integrity verification.
+ *
+ * Note: The CycloneDX specification references JSF (JSON Signature Format)
+ * but allows for flexible signature implementations.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  */
-final readonly class VulnerabilityAffectedVersions
+final readonly class Signature
 {
     public function __construct(
-        public ?string $version = null,
-        public ?string $range = null,
-        public ?AffectedStatus $status = null,
+        /** @var array<string, string|int|bool|array<string, string>>|string Raw signature data - flexible to support various signature formats */
+        public array|string $signatureData,
     ) {
-    }
-
-    public function getVersion(): ?string
-    {
-        return $this->version;
-    }
-
-    public function getRange(): ?string
-    {
-        return $this->range;
-    }
-
-    public function getStatus(): ?AffectedStatus
-    {
-        return $this->status;
     }
 }
