@@ -21,35 +21,40 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace mteu\SbomParser\Entity\Vulnerability;
+namespace mteu\SbomParser\Entity;
 
 /**
- * VulnerabilityAffectedVersions based on CycloneDX 1.4+ specification.
+ * Compositions entity for BOM completeness tracking.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  */
-final readonly class VulnerabilityAffectedVersions
+final readonly class Compositions
 {
     public function __construct(
-        public ?string $version = null,
-        public ?string $range = null,
-        public ?AffectedStatus $status = null,
+        public AggregateType $aggregate,
+        /** @var string[]|null */
+        public ?array $assemblies = null,
+        /** @var string[]|null */
+        public ?array $dependencies = null,
+        /** @var mixed Digital signature */
+        public mixed $signature = null,
     ) {
     }
 
-    public function getVersion(): ?string
+    /**
+     * @return string[]
+     */
+    public function getAssemblies(): array
     {
-        return $this->version;
+        return $this->assemblies ?? [];
     }
 
-    public function getRange(): ?string
+    /**
+     * @return string[]
+     */
+    public function getDependencies(): array
     {
-        return $this->range;
-    }
-
-    public function getStatus(): ?AffectedStatus
-    {
-        return $this->status;
+        return $this->dependencies ?? [];
     }
 }

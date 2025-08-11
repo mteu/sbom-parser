@@ -21,35 +21,20 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace mteu\SbomParser\Entity\Vulnerability;
+namespace mteu\SbomParser\Entity;
 
 /**
- * VulnerabilityAffectedVersions based on CycloneDX 1.4+ specification.
+ * Aggregate type enum for Compositions.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  */
-final readonly class VulnerabilityAffectedVersions
+enum AggregateType: string
 {
-    public function __construct(
-        public ?string $version = null,
-        public ?string $range = null,
-        public ?AffectedStatus $status = null,
-    ) {
-    }
-
-    public function getVersion(): ?string
-    {
-        return $this->version;
-    }
-
-    public function getRange(): ?string
-    {
-        return $this->range;
-    }
-
-    public function getStatus(): ?AffectedStatus
-    {
-        return $this->status;
-    }
+    case COMPLETE = 'complete';
+    case INCOMPLETE = 'incomplete';
+    case INCOMPLETE_FIRST_PARTY_ONLY = 'incomplete_first_party_only';
+    case INCOMPLETE_THIRD_PARTY_ONLY = 'incomplete_third_party_only';
+    case UNKNOWN = 'unknown';
+    case NOT_SPECIFIED = 'not_specified';
 }

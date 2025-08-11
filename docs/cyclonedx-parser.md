@@ -180,42 +180,9 @@ $npmComponents = array_filter(
 );
 ```
 
-### Metadata Access
-
-```php
-$metadata = $bom->getMetadata();
-if ($metadata) {
-    echo "Generated: " . $metadata->getTimestamp()?->format('Y-m-d H:i:s') . "\n";
-
-    foreach ($metadata->getTools() as $tool) {
-        echo "Tool: " . $tool->name . " v" . $tool->version . "\n";
-    }
-}
-
-## Security Features
-
-The parser includes security validation for file paths:
-
-- Absolute path requirement
-- Web-accessible directory detection
-- Directory traversal prevention
-- File extension validation
-
 ## Supported Formats
 
 - **CycloneDX 1.4+** - Primary support
 - **CycloneDX 1.5** - Full support
 - **CycloneDX 1.6** - Full support with latest features
 - **JSON format** - Primary format support
-
-## Type Safety
-
-The parser uses **Valinor** for type-safe mapping with:
-
-- Automatic enum conversion
-- Date format support
-- Flexible type casting
-- Comprehensive validation
-- Detailed error reporting
-
-All entities are `final readonly` classes ensuring immutability and maximum type safety.

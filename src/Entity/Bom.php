@@ -41,18 +41,19 @@ final readonly class Bom
         public ?Metadata $metadata = null,
         /** @var Component[]|null */
         public ?array $components = null,
-        /** @var string[]|null */
+        /** @var Service[]|null */
         public ?array $services = null,
         /** @var ExternalReference[]|null */
         public ?array $externalReferences = null,
         /** @var Dependency[]|null */
         public ?array $dependencies = null,
-        /** @var string[]|null */
+        /** @var Compositions[]|null */
         public ?array $compositions = null,
         /** @var Vulnerability[]|null */
         public ?array $vulnerabilities = null,
         /** @var Property[]|null */
         public ?array $properties = null,
+        public ?Signature $signature = null,
     ) {
     }
 
@@ -173,5 +174,44 @@ final readonly class Bom
         }
 
         return null;
+    }
+
+    /**
+     * @return Service[]
+     */
+    public function getServices(): array
+    {
+        return $this->services ?? [];
+    }
+
+    public function hasServices(): bool
+    {
+        return $this->services !== null && count($this->services) > 0;
+    }
+
+    /**
+     * @return Compositions[]
+     */
+    public function getCompositions(): array
+    {
+        return $this->compositions ?? [];
+    }
+
+    public function hasCompositions(): bool
+    {
+        return $this->compositions !== null && count($this->compositions) > 0;
+    }
+
+    public function getSignature(): ?Signature
+    {
+        return $this->signature;
+    }
+
+    /**
+     * @return Property[]
+     */
+    public function getProperties(): array
+    {
+        return $this->properties ?? [];
     }
 }

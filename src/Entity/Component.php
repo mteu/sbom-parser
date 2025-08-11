@@ -35,7 +35,7 @@ final readonly class Component
         public ComponentType $type,
         public string $name,
         public ?string $bomRef = null,
-        public ?string $supplier = null,
+        public ?OrganizationalEntity $supplier = null,
         public ?string $author = null,
         public ?string $publisher = null,
         public ?string $group = null,
@@ -49,7 +49,11 @@ final readonly class Component
         public ?string $copyright = null,
         public ?string $cpe = null,
         public ?string $purl = null,
-        public ?string $swid = null,
+        public ?string $mimeType = null,
+        public ?SwidTag $swid = null,
+        public ?ComponentEvidence $evidence = null,
+        public ?ReleaseNotes $releaseNotes = null,
+        public ?bool $modified = null,
         public ?Pedigree $pedigree = null,
         /** @var ExternalReference[]|null */
         public ?array $externalReferences = null,
@@ -115,5 +119,30 @@ final readonly class Component
     public function getHashes(): array
     {
         return $this->hashes ?? [];
+    }
+
+    public function getSupplier(): ?OrganizationalEntity
+    {
+        return $this->supplier;
+    }
+
+    public function getMimeType(): ?string
+    {
+        return $this->mimeType;
+    }
+
+    public function getSwid(): ?SwidTag
+    {
+        return $this->swid;
+    }
+
+    public function getEvidence(): ?ComponentEvidence
+    {
+        return $this->evidence;
+    }
+
+    public function getReleaseNotes(): ?ReleaseNotes
+    {
+        return $this->releaseNotes;
     }
 }
