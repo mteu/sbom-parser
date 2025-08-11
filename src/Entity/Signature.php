@@ -25,7 +25,7 @@ namespace mteu\SbomParser\Entity;
 
 /**
  * Digital signature entity for integrity verification.
- * 
+ *
  * Note: The CycloneDX specification references JSF (JSON Signature Format)
  * but allows for flexible signature implementations.
  *
