@@ -1,0 +1,21 @@
+parameters:
+	scanDirectories:
+		- ../../.build/vendor/phpunit/phpunit/src
+		- ../../.build/vendor/cuyz/valinor/src
+	paths:
+		- ../../src
+		- ../../tests/Unit
+	level: max
+	treatPhpDocTypesAsCertain: false
+
+	ergebnis:
+		noExtends:
+			classesAllowedToBeExtended:
+				- Exception
+
+	ignoreErrors:
+		- identifier: ergebnis.noConstructorParameterWithDefaultValue
+		- identifier: ergebnis.noNullableReturnTypeDeclaration
+		- identifier: ergebnis.noParameterWithNullDefaultValue
+		- identifier: ergebnis.noParameterWithNullableTypeDeclaration
+		- message: '#Interface must be located in "Contract" or "Contracts" namespace#'

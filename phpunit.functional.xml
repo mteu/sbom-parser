@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation=".build/vendor/phpunit/phpunit/phpunit.xsd"
+    colors="true"
+>
+    <testsuites>
+        <testsuite name="Functional tests">
+            <directory>tests/Functional</directory>
+        </testsuite>
+    </testsuites>
+    <coverage>
+        <report>
+            <php outputFile=".build/coverage/php/functional.cov"/>
+            <html outputDirectory=".build/coverage/html/functional/"/>
+            <text outputFile="php://stdout" showUncoveredFiles="true"/>
+        </report>
+    </coverage>
+    <logging>
+        <junit outputFile=".build/coverage/junit/functional.xml"/>
+    </logging>
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
+</phpunit>
