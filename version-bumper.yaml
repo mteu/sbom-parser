@@ -1,0 +1,3 @@
+releaseOptions:
+  commitMessage: '[RELEASE] Release of mteu/sbom-parser v{%version%}'
+  signTag: true

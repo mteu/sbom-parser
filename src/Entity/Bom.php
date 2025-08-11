@@ -1,0 +1,177 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * This file is part of the package "mteu/sbom-parser".
+ *
+ * Copyright (C) 2025 Martin Adler <mteu@mailbox.org>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+namespace mteu\SbomParser\Entity;
+
+use mteu\SbomParser\Entity\Vulnerability\Vulnerability;
+
+/**
+ * Bom.
+ *
+ * @author Martin Adler <mteu@mailbox.org>
+ * @license GPL-3.0-or-later
+ */
+final readonly class Bom
+{
+    public function __construct(
+        public string $bomFormat,
+        public string $specVersion,
+        public ?string $serialNumber = null,
+        public ?int $version = null,
+        public ?Metadata $metadata = null,
+        /** @var Component[]|null */
+        public ?array $components = null,
+        /** @var string[]|null */
+        public ?array $services = null,
+        /** @var ExternalReference[]|null */
+        public ?array $externalReferences = null,
+        /** @var Dependency[]|null */
+        public ?array $dependencies = null,
+        /** @var string[]|null */
+        public ?array $compositions = null,
+        /** @var Vulnerability[]|null */
+        public ?array $vulnerabilities = null,
+        /** @var Property[]|null */
+        public ?array $properties = null,
+    ) {
+    }
+
+    public function getBomFormat(): string
+    {
+        return $this->bomFormat;
+    }
+
+    public function getSpecVersion(): string
+    {
+        return $this->specVersion;
+    }
+
+    public function getSerialNumber(): ?string
+    {
+        return $this->serialNumber;
+    }
+
+    public function getVersion(): ?int
+    {
+        return $this->version;
+    }
+
+    public function getMetadata(): ?Metadata
+    {
+        return $this->metadata;
+    }
+
+    /**
+     * @return Component[]
+     */
+    public function getComponents(): array
+    {
+        return $this->components ?? [];
+    }
+
+    /**
+     * @return Vulnerability[]
+     */
+    public function getVulnerabilities(): array
+    {
+        return $this->vulnerabilities ?? [];
+    }
+
+    /**
+     * @return ExternalReference[]
+     */
+    public function getExternalReferences(): array
+    {
+        return $this->externalReferences ?? [];
+    }
+
+    /**
+     * @return Dependency[]
+     */
+    public function getDependencies(): array
+    {
+        return $this->dependencies ?? [];
+    }
+
+    public function hasComponents(): bool
+    {
+        return $this->components !== null && count($this->components) > 0;
+    }
+
+    public function hasVulnerabilities(): bool
+    {
+        return $this->vulnerabilities !== null && count($this->vulnerabilities) > 0;
+    }
+
+    /**
+     * @return Component[]
+     */
+    public function getAllComponents(): array
+    {
+        $allComponents = [];
+
+        foreach ($this->getComponents() as $component) {
+            $allComponents[] = $component;
+            $allComponents = array_merge($allComponents, $this->extractNestedComponents($component));
+        }
+
+        return $allComponents;
+    }
+
+    /**
+     * @return Component[]
+     */
+    private function extractNestedComponents(Component $component): array
+    {
+        $nested = [];
+
+        foreach ($component->getComponents() as $childComponent) {
+            $nested[] = $childComponent;
+            $nested = array_merge($nested, $this->extractNestedComponents($childComponent));
+        }
+
+        return $nested;
+    }
+
+    /**
+     * @return Component[]
+     */
+    public function findComponentsByType(ComponentType $type): array
+    {
+        return array_filter(
+            $this->getAllComponents(),
+            static fn (Component $component): bool => $component->getType() === $type
+        );
+    }
+
+    public function findComponentByPurl(string $purl): ?Component
+    {
+        foreach ($this->getAllComponents() as $component) {
+            if ($component->getPackageUrl() === $purl) {
+                return $component;
+            }
+        }
+
+        return null;
+    }
+}

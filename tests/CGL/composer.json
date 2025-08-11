@@ -1,0 +1,61 @@
+{
+	"require-dev": {
+		"armin/editorconfig-cli": "2.1.1",
+		"ergebnis/composer-normalize": "2.47.0",
+		"friendsofphp/php-cs-fixer": "3.85.1",
+		"mteu/zealous-stan": "0.6.3",
+		"phpstan/extension-installer": "1.4.3",
+		"phpstan/phpstan": "2.1.22",
+		"rector/rector": "^2.0",
+		"roave/security-advisories": "dev-latest",
+		"shipmonk/composer-dependency-analyser": "1.8.3"
+	},
+	"config": {
+		"allow-plugins": {
+			"eliashaeussler/version-bumper": true,
+			"ergebnis/composer-normalize": true,
+			"phpstan/extension-installer": true
+		},
+		"lock": false,
+		"sort-packages": true
+	},
+	"scripts": {
+		"analyze": [
+			"@analyze:dependencies"
+		],
+		"analyze:dependencies": "composer-dependency-analyser --composer-json ../../composer.json",
+		"fix": [
+			"@fix:composer",
+			"@fix:editorconfig",
+			"@fix:php"
+		],
+		"fix:composer": [
+			"@composer normalize",
+			"@composer normalize ../../composer.json"
+		],
+		"fix:editorconfig": "ec --fix",
+		"fix:php": "php-cs-fixer fix --config php-cs-fixer.php",
+		"lint": [
+			"@lint:composer",
+			"@lint:editorconfig",
+			"@lint:php"
+		],
+		"lint:composer": "@fix:composer --dry-run",
+		"lint:editorconfig": "ec",
+		"lint:php": "php-cs-fixer fix --config php-cs-fixer.php",
+		"sca": [
+			"@sca:php",
+			"@sca:migrate"
+		],
+		"sca:migrate": [
+			"@sca:migrate:php"
+		],
+		"sca:migrate:php": [
+			"Composer\\Config::disableProcessTimeout",
+			"rector process"
+		],
+		"sca:php": [
+			"phpstan analyse -c phpstan.neon --memory-limit=4G"
+		]
+	}
+}

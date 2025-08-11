@@ -1,0 +1,70 @@
+{
+    "name": "mteu/sbom-parser",
+    "description": "",
+    "license": "GPL-3.0-or-later",
+    "type": "package",
+    "authors": [
+        {
+            "name": "Martin Adler",
+            "email": "mteu@mailbox.org"
+        }
+    ],
+    "require": {
+        "php": "~8.3.0 || ~8.4.0",
+        "cuyz/valinor": "^2.0"
+    },
+    "require-dev": {
+        "armin/editorconfig-cli": "^2.1",
+        "cyclonedx/cyclonedx-php-composer": "^5.2",
+        "ergebnis/composer-normalize": "^2.28",
+        "friendsofphp/php-cs-fixer": "^3.8",
+        "mteu/zealous-stan": "^0.6.3",
+        "phpstan/extension-installer": "*",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpunit/phpcov": "^10.0 || ^11.0.0",
+        "phpunit/phpunit": "^11.5 || ^12.1",
+        "shipmonk/composer-dependency-analyser": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "mteu\\SbomParser\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "mteu\\SbomParser\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "cyclonedx/cyclonedx-php-composer": true,
+            "eliashaeussler/version-bumper": true,
+            "ergebnis/composer-normalize": true,
+            "phpstan/extension-installer": true
+        },
+        "lock": true,
+        "sort-packages": true,
+        "vendor-dir": ".build/vendor"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@cgl install"
+        ],
+        "cgl": "@composer -d tests/CGL --",
+        "fix": "@cgl fix",
+        "lint": "@cgl lint",
+        "sca": "@cgl sca",
+        "test": [
+            "@test:unit"
+        ],
+        "test:coverage": [
+            "@test:coverage:unit",
+            "@test:coverage:merge"
+        ],
+        "test:coverage:merge": "phpcov merge --html .build/coverage/merged_html --clover .build/coverage/clover.xml --text php://stdout .build/coverage/php ",
+        "test:coverage:unit": "phpunit -c phpunit.unit.xml",
+        "test:functional": "@test:coverage:functional --no-coverage",
+        "test:unit": "@test:coverage:unit --no-coverage"
+    }
+}
