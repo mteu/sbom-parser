@@ -98,7 +98,7 @@ final readonly class CycloneDxParser implements Parser
      */
     public function parseFromArray(array $data): Bom
     {
-        $this->validateBasicStructure($data);
+        $this->validateDataStructure($data);
 
         try {
             return $this->mapper->map(Bom::class, $data);
@@ -157,7 +157,7 @@ final readonly class CycloneDxParser implements Parser
     public function isValidSbomArray(array $data): bool
     {
         try {
-            $this->validateBasicStructure($data);
+            $this->validateDataStructure($data);
             return true;
         } catch (SbomParseException) {
             return false;
@@ -165,16 +165,15 @@ final readonly class CycloneDxParser implements Parser
     }
 
     /**
-     * Validate that SBOM path is secure (not in web root)
+     * Validate that SBOM path
      */
     private function validateSbomPath(string $sbomFilePath): void
     {
         // Ensure absolute path
         if (!str_starts_with($sbomFilePath, '/')) {
-            throw SbomParseException::validationFailed('SBOM file path must be absolute for security reasons');
+            throw SbomParseException::validationFailed('SBOM file path must be absolute');
         }
 
-        // Additional security checks
         $realPath = realpath(dirname($sbomFilePath));
         if ($realPath === false) {
             throw SbomParseException::validationFailed('SBOM directory does not exist or is not accessible');
@@ -200,7 +199,7 @@ final readonly class CycloneDxParser implements Parser
     /**
      * @param array<string, mixed> $data
      */
-    private function validateBasicStructure(array $data): void
+    private function validateDataStructure(array $data): void
     {
         if (!array_key_exists('bomFormat', $data)) {
             throw SbomParseException::validationFailed('Missing required field: bomFormat');
