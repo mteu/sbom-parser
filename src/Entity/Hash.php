@@ -28,6 +28,7 @@ namespace mteu\SbomParser\Entity;
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
+ * @codeCoverageIgnore
  */
 final readonly class Hash
 {
