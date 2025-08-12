@@ -27,6 +27,7 @@ use mteu\SbomParser\Entity\Bom;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\CycloneDxParser;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -48,7 +49,7 @@ final class CycloneDxParserTest extends TestCase
         parent::setUp();
         $this->subject = new CycloneDxParser();
 
-        $this->tempOutputDir = dirname(__DIR__, 2) . '/Unit/_temp/unit_' . uniqid();
+        $this->tempOutputDir = dirname(__DIR__, 2) . '/Unit/tmp/unit_' . uniqid();
         mkdir($this->tempOutputDir, 0755, true);
     }
 
@@ -103,7 +104,7 @@ final class CycloneDxParserTest extends TestCase
     #[Test]
     public function parserThrowsExceptionIfFileIsNotWithJsonExtension(): void
     {
-        $filePath = tempnam($this->tempOutputDir,'json_');
+        $filePath = tempnam($this->tempOutputDir, 'json_');
         chmod($filePath, 0222); // write-only to simulate unreadable
 
         $this->expectException(SbomParseException::class);
@@ -114,7 +115,7 @@ final class CycloneDxParserTest extends TestCase
     #[Test]
     public function parserThrowsExceptionForUnreadableFileInPath(): void
     {
-        $filePath = tempnam($this->tempOutputDir,'parse_json');
+        $filePath = tempnam($this->tempOutputDir, 'parse_json');
         rename($filePath, $filePath . '.json');
         $filePath = $filePath . '.json';
         chmod($filePath, 0222); // write-only to simulate unreadable
@@ -122,5 +123,154 @@ final class CycloneDxParserTest extends TestCase
         $this->expectException(SbomParseException::class);
         $this->expectExceptionMessage("File not readable: $filePath");
         $this->subject->parseFromFile($filePath);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    #[Test]
+    #[DataProvider('validateDataStructureProvider')]
+    public function validateDataStructureSuccessfullyIteratesThroughVariousInputs(array $data, bool $expectsException, string $expectedMessage = ''): void
+    {
+        if ($expectsException) {
+            $this->expectException(SbomParseException::class);
+            $this->expectExceptionMessage($expectedMessage);
+        }
+
+        $this->subject->parseFromArray($data);
+
+        if (!$expectsException) {
+            self::assertInstanceOf(Bom::class, $this->subject->parseFromArray($data));
+        }
+    }
+
+    #[Test]
+    #[DataProvider('validateSbomPathProvider')]
+    public function validateSbomPathSuccessfullyIteratesThroughVariousInputs(string $filePath, bool $expectsException, string $expectedMessage = ''): void
+    {
+        if ($expectsException) {
+            $this->expectException(SbomParseException::class);
+            $this->expectExceptionMessage($expectedMessage);
+        }
+
+        $result = $this->subject->parseFromFile($filePath);
+
+        if (!$expectsException) {
+            self::assertInstanceOf(Bom::class, $result);
+        }
+    }
+
+    /**
+     * @return \Generator<string, array{array<string, mixed>, bool, string}>
+     */
+    public static function validateDataStructureProvider(): \Generator
+    {
+        yield 'valid CycloneDX 1.4' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.4'],
+            false,
+            '',
+        ];
+
+        yield 'valid CycloneDX 1.4 with patch level' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.4.2'],
+            false,
+            '',
+        ];
+
+        yield 'valid CycloneDX 1.5' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.5'],
+            false,
+            '',
+        ];
+
+        yield 'valid CycloneDX 1.5 with patch level' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.5.0.0'],
+            false,
+            '',
+        ];
+
+        yield 'valid CycloneDX 1.6' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.6'],
+            false,
+            '',
+        ];
+
+        yield 'valid CycloneDX 1.6 with version qualifier' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.6-rc1'],
+            false,
+            '',
+        ];
+
+        yield 'missing bomFormat' => [
+            ['specVersion' => '1.5'],
+            true,
+            'Missing required field: bomFormat',
+        ];
+
+        yield 'missing specVersion' => [
+            ['bomFormat' => 'CycloneDX'],
+            true,
+            'Missing required field: specVersion',
+        ];
+
+        yield 'invalid bomFormat type' => [
+            ['bomFormat' => 123, 'specVersion' => '1.5'],
+            true,
+            'Field bomFormat must be a string',
+        ];
+
+        yield 'invalid specVersion type' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => 123],
+            true,
+            'Field specVersion must be a string',
+        ];
+
+        yield 'unsupported bomFormat' => [
+            ['bomFormat' => 'SPDX', 'specVersion' => '1.5'],
+            true,
+            'Unsupported SBOM format: SPDX',
+        ];
+
+        yield 'unsupported specVersion' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.3'],
+            true,
+            'Unsupported SBOM version: 1.3',
+        ];
+    }
+
+    /**
+     * @return \Generator<string, array{string, bool, string}>
+     */
+    public static function validateSbomPathProvider(): \Generator
+    {
+        yield 'valid absolute path with json extension' => [
+            dirname(__DIR__) . '/Fixtures/cdx.sbom.json',
+            false,
+            '',
+        ];
+
+        yield 'relative path' => [
+            'relative/path/file.json',
+            true,
+            'SBOM file path must be absolute',
+        ];
+
+        yield 'path with directory traversal' => [
+            '/tmp/../etc/sbom.json',
+            true,
+            'Directory traversal not allowed in SBOM path',
+        ];
+
+        yield 'path without extension' => [
+            '/tmp/noextension',
+            true,
+            'SBOM file must have .json extension',
+        ];
+
+        yield 'path with wrong extension' => [
+            '/tmp/wrong.xml',
+            true,
+            'SBOM file must have .json extension',
+        ];
     }
 }
