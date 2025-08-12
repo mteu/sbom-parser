@@ -7,7 +7,7 @@
 
 # CycloneDX SBOM Parser
 
-[![PHP Version Require](https://poser.pugx.org/mteu/sbom-parser/require/php)](https://packagist.org/packages/mteu/typo3-typed-extconf)
+[![PHP Version Require](https://poser.pugx.org/mteu/sbom-parser/require/php)](https://packagist.org/packages/mteu/sbom-parser)
 
 </div>
 
