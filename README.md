@@ -4,11 +4,9 @@
 [![Tests](https://github.com/mteu/sbom-parser/actions/workflows/tests.yaml/badge.svg?branch=main)](https://github.com/mteu/sbom-parser/actions/workflows/tests.yaml)
 [![Coverage](https://coveralls.io/repos/github/mteu/sbom-parser/badge.svg?branch=main)](https://coveralls.io/github/mteu/sbom-parser?branch=main)
 [![Maintainability](https://qlty.sh/gh/mteu/projects/sbom-parser/maintainability.svg)](https://qlty.sh/gh/mteu/projects/sbom-parser)
-
-# CycloneDX SBOM Parser
-
 [![PHP Version Require](https://poser.pugx.org/mteu/sbom-parser/require/php)](https://packagist.org/packages/mteu/sbom-parser)
 
+# CycloneDX SBOM Parser
 </div>
 
 CycloneDX SBOM (Software Bill of Materials) parser for PHP 8.3+. Supports [CycloneDX 1.4+ specifications](https://github.com/CycloneDX/specification) including components, vulnerabilities, and metadata with full immutable entity design using Valinor for type mapping.
