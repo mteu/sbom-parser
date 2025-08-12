@@ -78,12 +78,23 @@ final class CycloneDxParserTest extends TestCase
         return rmdir($dir);
     }
 
-    #[Test]
-    public function parserSucceedsInParsingAPerfectlyValidSbomJson(): void
+    /**
+     * @param-immediately-invoked-callable $operation
+     */
+    private function runParserTest(callable $operation, bool $expectsException, string $expectedMessage): void
     {
-        $sbom = $this->subject->parseFromFile(dirname(__DIR__, ) . '/Fixtures/cdx.sbom.json');
-        self::assertInstanceOf(Bom::class, $sbom);
+        if ($expectsException) {
+            $this->expectException(SbomParseException::class);
+            $this->expectExceptionMessage($expectedMessage);
+        }
+
+        $result = $operation();
+
+        if (!$expectsException) {
+            self::assertInstanceOf(Bom::class, $result);
+        }
     }
+
 
     #[Test]
     public function validatingSbomFileSucceedsForAProperFile(): void
@@ -93,76 +104,25 @@ final class CycloneDxParserTest extends TestCase
         );
     }
 
-    #[Test]
-    public function parserThrowsExceptionForMissingFileInPath(): void
-    {
-        self::expectException(SbomParseException::class);
-        self::expectExceptionMessage('SBOM validation failed: File not found');
-        $this->subject->parseFromFile(dirname(__DIR__, ) . '/Fixtures/meh.json');
-    }
-
-    #[Test]
-    public function parserThrowsExceptionIfFileIsNotWithJsonExtension(): void
-    {
-        $filePath = tempnam($this->tempOutputDir, 'json_');
-        chmod($filePath, 0222); // write-only to simulate unreadable
-
-        $this->expectException(SbomParseException::class);
-        $this->expectExceptionMessage('SBOM validation failed: SBOM file must have .json extension');
-        $this->subject->parseFromFile($filePath);
-    }
-
-    #[Test]
-    public function parserThrowsExceptionForUnreadableFileInPath(): void
-    {
-        $filePath = tempnam($this->tempOutputDir, 'parse_json');
-        rename($filePath, $filePath . '.json');
-        $filePath = $filePath . '.json';
-        chmod($filePath, 0222); // write-only to simulate unreadable
-
-        $this->expectException(SbomParseException::class);
-        $this->expectExceptionMessage("File not readable: $filePath");
-        $this->subject->parseFromFile($filePath);
-    }
 
     /**
      * @param array<string, mixed> $data
      */
     #[Test]
     #[DataProvider('validateDataStructureProvider')]
-    public function validateDataStructureSuccessfullyIteratesThroughVariousInputs(array $data, bool $expectsException, string $expectedMessage = ''): void
+    public function validateDataStructure(array $data, bool $expectsException, string $expectedMessage = ''): void
     {
-        if ($expectsException) {
-            $this->expectException(SbomParseException::class);
-            $this->expectExceptionMessage($expectedMessage);
-        }
-
-        $this->subject->parseFromArray($data);
-
-        if (!$expectsException) {
-            self::assertInstanceOf(Bom::class, $this->subject->parseFromArray($data));
-        }
+        $this->runParserTest(fn () => $this->subject->parseFromArray($data), $expectsException, $expectedMessage);
     }
 
     #[Test]
     #[DataProvider('validateSbomPathProvider')]
-    public function validateSbomPathSuccessfullyIteratesThroughVariousInputs(string $filePath, bool $expectsException, string $expectedMessage = ''): void
+    public function validateSbomPath(string $filePath, bool $expectsException, string $expectedMessage = ''): void
     {
-        if ($expectsException) {
-            $this->expectException(SbomParseException::class);
-            $this->expectExceptionMessage($expectedMessage);
-        }
-
-        $result = $this->subject->parseFromFile($filePath);
-
-        if (!$expectsException) {
-            self::assertInstanceOf(Bom::class, $result);
-        }
+        $this->runParserTest(fn () => $this->subject->parseFromFile($filePath), $expectsException, $expectedMessage);
     }
 
-    /**
-     * @return \Generator<string, array{array<string, mixed>, bool, string}>
-     */
+    /** @return \Generator<string, array{array<string, mixed>, bool, string}> */
     public static function validateDataStructureProvider(): \Generator
     {
         yield 'valid CycloneDX 1.4' => [
@@ -238,9 +198,7 @@ final class CycloneDxParserTest extends TestCase
         ];
     }
 
-    /**
-     * @return \Generator<string, array{string, bool, string}>
-     */
+    /** @return \Generator<string, array{string, bool, string}> */
     public static function validateSbomPathProvider(): \Generator
     {
         yield 'valid absolute path with json extension' => [
@@ -271,6 +229,152 @@ final class CycloneDxParserTest extends TestCase
             '/tmp/wrong.xml',
             true,
             'SBOM file must have .json extension',
+        ];
+
+        yield 'file not found' => [
+            dirname(__DIR__) . '/Fixtures/nonexistent.json',
+            true,
+            'File not found',
+        ];
+    }
+
+    #[Test]
+    public function parseFromFileThrowsExceptionForUnreadableFile(): void
+    {
+        $filePath = tempnam($this->tempOutputDir, 'parse_json') . '.json';
+        file_put_contents($filePath, '{}');
+        chmod($filePath, 0222); // write-only to simulate unreadable
+
+        $this->expectException(SbomParseException::class);
+        $this->expectExceptionMessage("File not readable: $filePath");
+        $this->subject->parseFromFile($filePath);
+    }
+
+    #[Test]
+    #[DataProvider('parseFromJsonProvider')]
+    public function parseFromJson(string $json, bool $expectsException, string $expectedMessage = ''): void
+    {
+        $this->runParserTest(fn () => $this->subject->parseFromJson($json), $expectsException, $expectedMessage);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    #[Test]
+    #[DataProvider('parseFromArrayProvider')]
+    public function parseFromArray(array $data, bool $expectsException, string $expectedMessage = ''): void
+    {
+        $this->runParserTest(fn () => $this->subject->parseFromArray($data), $expectsException, $expectedMessage);
+    }
+
+    /** @return \Generator<string, array{string, bool, string}> */
+    public static function parseFromJsonProvider(): \Generator
+    {
+        yield 'valid JSON object parses successfully' => [
+            '{"bomFormat":"CycloneDX","specVersion":"1.5"}',
+            false,
+            '',
+        ];
+
+        yield 'malformed JSON with missing quote' => [
+            '{"bomFormat":"CycloneDX,"specVersion":"1.5"}',
+            true,
+            'Invalid JSON:',
+        ];
+
+        yield 'malformed JSON with trailing comma' => [
+            '{"bomFormat":"CycloneDX","specVersion":"1.5",}',
+            true,
+            'Invalid JSON:',
+        ];
+
+        yield 'malformed JSON with missing brace' => [
+            '{"bomFormat":"CycloneDX","specVersion":"1.5"',
+            true,
+            'Invalid JSON:',
+        ];
+
+        yield 'valid JSON but indexed array instead of object' => [
+            '["bomFormat","CycloneDX"]',
+            true,
+            'Missing required field: bomFormat',
+        ];
+
+        yield 'valid JSON but string instead of object' => [
+            '"not an object"',
+            true,
+            'Decoded JSON is not an array',
+        ];
+
+        yield 'valid JSON but number instead of object' => [
+            '42',
+            true,
+            'Decoded JSON is not an array',
+        ];
+
+        yield 'valid JSON but null' => [
+            'null',
+            true,
+            'Decoded JSON is not an array',
+        ];
+    }
+
+    /** @return \Generator<string, array{array<string, mixed>, bool, string}> */
+    public static function parseFromArrayProvider(): \Generator
+    {
+        yield 'valid minimal structure maps successfully' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.5'],
+            false,
+            '',
+        ];
+
+        yield 'valid structure with complex metadata' => [
+            [
+                'bomFormat' => 'CycloneDX',
+                'specVersion' => '1.5',
+                'serialNumber' => 'urn:uuid:12345',
+                'version' => 1,
+                'metadata' => [
+                    'timestamp' => '2025-01-01T12:00:00Z',
+                    'tools' => [
+                        ['name' => 'test-tool', 'version' => '1.0']
+                    ]
+                ]
+            ],
+            false,
+            '',
+        ];
+
+        yield 'invalid version type causes mapping error' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.5', 'version' => 'not-a-number'],
+            true,
+            'Valinor mapping failed',
+        ];
+
+        yield 'invalid serialNumber type causes mapping error' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.5', 'serialNumber' => 123],
+            true,
+            'Valinor mapping failed',
+        ];
+
+        yield 'invalid metadata structure causes mapping error' => [
+            [
+                'bomFormat' => 'CycloneDX',
+                'specVersion' => '1.5',
+                'metadata' => 'invalid-metadata-string'
+            ],
+            true,
+            'Valinor mapping failed',
+        ];
+
+        yield 'invalid components array causes mapping error' => [
+            [
+                'bomFormat' => 'CycloneDX',
+                'specVersion' => '1.5',
+                'components' => 'not-an-array'
+            ],
+            true,
+            'Valinor mapping failed',
         ];
     }
 }
