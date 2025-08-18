@@ -21,48 +21,43 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace mteu\SbomParser\Entity\Vulnerability;
+namespace mteu\SbomParser\Tests\Unit\Entity;
+
+use mteu\SbomParser\Entity\License;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
 
 /**
- * VulnerabilityRating based on CycloneDX 1.4+ specification.
+ * LicenseTest.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
- * @codeCoverageIgnore
  */
-final readonly class VulnerabilityRating
+#[CoversClass(License::class)]
+final class LicenseTest extends TestCase
 {
-    public function __construct(
-        public ?VulnerabilitySource $source = null,
-        public ?float $score = null,
-        public ?string $severity = null,
-        public ?string $method = null,
-        public ?string $vector = null,
-        public ?string $justification = null,
-    ) {
+    #[Test]
+    public function hasExpressionReturnsFalseWhenNull(): void
+    {
+        $license = new License(id: 'MIT');
+
+        self::assertFalse($license->hasExpression());
     }
 
-    /**
-     * @deprecated Trivial getter - access property directly
-     */
-    public function getSeverity(): ?string
+    #[Test]
+    public function hasExpressionReturnsTrueWhenExpressionExists(): void
     {
-        return $this->severity;
+        $license = new License(expression: 'MIT OR Apache-2.0');
+
+        self::assertTrue($license->hasExpression());
     }
 
-    /**
-     * @deprecated Trivial getter - access property directly
-     */
-    public function getScore(): ?float
+    #[Test]
+    public function hasExpressionReturnsTrueWhenExpressionIsEmptyString(): void
     {
-        return $this->score;
-    }
+        $license = new License(expression: '');
 
-    /**
-     * @deprecated Trivial getter - access property directly
-     */
-    public function getMethod(): ?string
-    {
-        return $this->method;
+        self::assertTrue($license->hasExpression());
     }
 }

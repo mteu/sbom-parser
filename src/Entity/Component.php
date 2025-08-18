@@ -64,27 +64,40 @@ final readonly class Component
     ) {
     }
 
+    /**
+     * @deprecated Trivial getter - access purl property directly
+     */
     public function getPackageUrl(): ?string
     {
         return $this->purl;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getVersion(): ?string
     {
         return $this->version;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getType(): ComponentType
     {
         return $this->type;
     }
 
     /**
+     * @deprecated Trivial getter - access property directly with null coalescing
      * @return License[]
      */
     public function getLicenses(): array
@@ -93,6 +106,7 @@ final readonly class Component
     }
 
     /**
+     * @deprecated Trivial getter - access property directly with null coalescing
      * @return Component[]
      */
     public function getComponents(): array
@@ -106,6 +120,7 @@ final readonly class Component
     }
 
     /**
+     * @deprecated Trivial getter - access property directly with null coalescing
      * @return ExternalReference[]
      */
     public function getExternalReferences(): array
@@ -114,6 +129,7 @@ final readonly class Component
     }
 
     /**
+     * @deprecated Trivial getter - access property directly with null coalescing
      * @return Hash[]
      */
     public function getHashes(): array
@@ -121,26 +137,41 @@ final readonly class Component
         return $this->hashes ?? [];
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getSupplier(): ?OrganizationalEntity
     {
         return $this->supplier;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getMimeType(): ?string
     {
         return $this->mimeType;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getSwid(): ?SwidTag
     {
         return $this->swid;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getEvidence(): ?ComponentEvidence
     {
         return $this->evidence;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getReleaseNotes(): ?ReleaseNotes
     {
         return $this->releaseNotes;

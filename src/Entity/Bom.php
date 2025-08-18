@@ -57,26 +57,41 @@ final readonly class Bom
     ) {
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getBomFormat(): string
     {
         return $this->bomFormat;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getSpecVersion(): string
     {
         return $this->specVersion;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getSerialNumber(): ?string
     {
         return $this->serialNumber;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getVersion(): ?int
     {
         return $this->version;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getMetadata(): ?Metadata
     {
         return $this->metadata;
@@ -99,6 +114,7 @@ final readonly class Bom
     }
 
     /**
+     * @deprecated Trivial getter - access property directly with null coalescing
      * @return ExternalReference[]
      */
     public function getExternalReferences(): array
@@ -107,6 +123,7 @@ final readonly class Bom
     }
 
     /**
+     * @deprecated Trivial getter - access property directly with null coalescing
      * @return Dependency[]
      */
     public function getDependencies(): array
@@ -146,7 +163,7 @@ final readonly class Bom
     {
         $nested = [];
 
-        foreach ($component->getComponents() as $childComponent) {
+        foreach (($component->components ?? []) as $childComponent) {
             $nested[] = $childComponent;
             $nested = array_merge($nested, $this->extractNestedComponents($childComponent));
         }
@@ -161,14 +178,14 @@ final readonly class Bom
     {
         return array_filter(
             $this->getAllComponents(),
-            static fn (Component $component): bool => $component->getType() === $type
+            static fn (Component $component): bool => $component->type === $type
         );
     }
 
     public function findComponentByPurl(string $purl): ?Component
     {
         foreach ($this->getAllComponents() as $component) {
-            if ($component->getPackageUrl() === $purl) {
+            if ($component->purl === $purl) {
                 return $component;
             }
         }
@@ -177,6 +194,7 @@ final readonly class Bom
     }
 
     /**
+     * @deprecated Trivial getter - access property directly with null coalescing
      * @return Service[]
      */
     public function getServices(): array
@@ -190,6 +208,7 @@ final readonly class Bom
     }
 
     /**
+     * @deprecated Trivial getter - access property directly with null coalescing
      * @return Compositions[]
      */
     public function getCompositions(): array
@@ -202,12 +221,16 @@ final readonly class Bom
         return $this->compositions !== null && count($this->compositions) > 0;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getSignature(): ?Signature
     {
         return $this->signature;
     }
 
     /**
+     * @deprecated Trivial getter - access property directly with null coalescing
      * @return Property[]
      */
     public function getProperties(): array

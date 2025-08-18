@@ -41,11 +41,17 @@ final readonly class License
     ) {
     }
 
+    /**
+     * @deprecated Trivial getter - access id property directly
+     */
     public function getSpdxId(): ?string
     {
         return $this->id;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getName(): ?string
     {
         return $this->name;
@@ -56,6 +62,9 @@ final readonly class License
         return $this->expression !== null;
     }
 
+    /**
+     * @deprecated Trivial getter - access property directly
+     */
     public function getExpression(): ?string
     {
         return $this->expression;

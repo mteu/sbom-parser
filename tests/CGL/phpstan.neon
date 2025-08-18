@@ -14,6 +14,7 @@ parameters:
 				- Exception
 
 	ignoreErrors:
+		- identifier: ergebnis.noNamedArgument
 		- identifier: ergebnis.noConstructorParameterWithDefaultValue
 		- identifier: ergebnis.noNullableReturnTypeDeclaration
 		- identifier: ergebnis.noParameterWithNullDefaultValue
