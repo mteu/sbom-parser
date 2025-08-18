@@ -23,6 +23,13 @@ declare(strict_types=1);
 
 namespace mteu\SbomParser\Entity;
 
+/**
+ * Dependency.
+ *
+ * @author Martin Adler <mteu@mailbox.org>
+ * @license GPL-3.0-or-later
+ * @codeCoverageIgnore
+ */
 final readonly class Dependency
 {
     public function __construct(

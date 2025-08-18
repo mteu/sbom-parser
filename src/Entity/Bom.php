@@ -57,79 +57,8 @@ final readonly class Bom
     ) {
     }
 
-    /**
-     * @deprecated Trivial getter - access property directly
-     */
-    public function getBomFormat(): string
-    {
-        return $this->bomFormat;
-    }
 
-    /**
-     * @deprecated Trivial getter - access property directly
-     */
-    public function getSpecVersion(): string
-    {
-        return $this->specVersion;
-    }
 
-    /**
-     * @deprecated Trivial getter - access property directly
-     */
-    public function getSerialNumber(): ?string
-    {
-        return $this->serialNumber;
-    }
-
-    /**
-     * @deprecated Trivial getter - access property directly
-     */
-    public function getVersion(): ?int
-    {
-        return $this->version;
-    }
-
-    /**
-     * @deprecated Trivial getter - access property directly
-     */
-    public function getMetadata(): ?Metadata
-    {
-        return $this->metadata;
-    }
-
-    /**
-     * @return Component[]
-     */
-    public function getComponents(): array
-    {
-        return $this->components ?? [];
-    }
-
-    /**
-     * @return Vulnerability[]
-     */
-    public function getVulnerabilities(): array
-    {
-        return $this->vulnerabilities ?? [];
-    }
-
-    /**
-     * @deprecated Trivial getter - access property directly with null coalescing
-     * @return ExternalReference[]
-     */
-    public function getExternalReferences(): array
-    {
-        return $this->externalReferences ?? [];
-    }
-
-    /**
-     * @deprecated Trivial getter - access property directly with null coalescing
-     * @return Dependency[]
-     */
-    public function getDependencies(): array
-    {
-        return $this->dependencies ?? [];
-    }
 
     public function hasComponents(): bool
     {
@@ -148,7 +77,7 @@ final readonly class Bom
     {
         $allComponents = [];
 
-        foreach ($this->getComponents() as $component) {
+        foreach (($this->components ?? []) as $component) {
             $allComponents[] = $component;
             $allComponents = array_merge($allComponents, $this->extractNestedComponents($component));
         }
@@ -193,48 +122,16 @@ final readonly class Bom
         return null;
     }
 
-    /**
-     * @deprecated Trivial getter - access property directly with null coalescing
-     * @return Service[]
-     */
-    public function getServices(): array
-    {
-        return $this->services ?? [];
-    }
 
     public function hasServices(): bool
     {
         return $this->services !== null && count($this->services) > 0;
     }
 
-    /**
-     * @deprecated Trivial getter - access property directly with null coalescing
-     * @return Compositions[]
-     */
-    public function getCompositions(): array
-    {
-        return $this->compositions ?? [];
-    }
 
     public function hasCompositions(): bool
     {
         return $this->compositions !== null && count($this->compositions) > 0;
     }
 
-    /**
-     * @deprecated Trivial getter - access property directly
-     */
-    public function getSignature(): ?Signature
-    {
-        return $this->signature;
-    }
-
-    /**
-     * @deprecated Trivial getter - access property directly with null coalescing
-     * @return Property[]
-     */
-    public function getProperties(): array
-    {
-        return $this->properties ?? [];
-    }
 }

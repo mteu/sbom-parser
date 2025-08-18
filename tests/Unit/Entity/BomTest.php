@@ -46,7 +46,7 @@ final class BomTest extends TestCase
     {
         $bom = new Bom('CycloneDX', '1.6');
 
-        self::assertSame([], $bom->getComponents());
+        self::assertSame([], $bom->components ?? []);
     }
 
     #[Test]
@@ -55,7 +55,7 @@ final class BomTest extends TestCase
         $component = new Component(ComponentType::LIBRARY, 'test-lib');
         $bom = new Bom('CycloneDX', '1.6', components: [$component]);
 
-        self::assertSame([$component], $bom->getComponents());
+        self::assertSame([$component], $bom->components ?? []);
     }
 
     #[Test]
@@ -63,7 +63,7 @@ final class BomTest extends TestCase
     {
         $bom = new Bom('CycloneDX', '1.6');
 
-        self::assertSame([], $bom->getVulnerabilities());
+        self::assertSame([], $bom->vulnerabilities ?? []);
     }
 
     #[Test]
@@ -72,7 +72,7 @@ final class BomTest extends TestCase
         $vulnerability = new Vulnerability(id: 'CVE-2023-1234');
         $bom = new Bom('CycloneDX', '1.6', vulnerabilities: [$vulnerability]);
 
-        self::assertSame([$vulnerability], $bom->getVulnerabilities());
+        self::assertSame([$vulnerability], $bom->vulnerabilities ?? []);
     }
 
     #[Test]
