@@ -43,11 +43,4 @@ final readonly class Issue
     ) {
     }
 
-    /**
-     * @return string[]
-     */
-    public function getReferences(): array
-    {
-        return $this->references ?? [];
-    }
 }

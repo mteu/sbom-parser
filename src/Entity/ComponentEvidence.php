@@ -40,19 +40,4 @@ final readonly class ComponentEvidence
     ) {
     }
 
-    /**
-     * @return License[]
-     */
-    public function getLicenses(): array
-    {
-        return $this->licenses ?? [];
-    }
-
-    /**
-     * @return Copyright[]
-     */
-    public function getCopyright(): array
-    {
-        return $this->copyright ?? [];
-    }
 }

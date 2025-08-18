@@ -39,18 +39,6 @@ final readonly class Dependency
     ) {
     }
 
-    public function getRef(): string
-    {
-        return $this->ref;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getDependsOn(): array
-    {
-        return $this->dependsOn ?? [];
-    }
 
     public function hasDependencies(): bool
     {
