@@ -30,26 +30,4 @@ enum DependencyType: string
     case ROOT = 'root';
     case NPM = 'npm';
     case NPM_DEV = 'npm-dev';
-
-    public function getDisplayName(): string
-    {
-        return match ($this) {
-            self::REQUIRE => 'Dependency',
-            self::REQUIRE_DEV => 'Dev Dependency',
-            self::ROOT => 'Root Package',
-            self::NPM => 'NPM Dependency',
-            self::NPM_DEV => 'NPM Dev Dependency',
-        };
-    }
-
-    public function getBadgeClass(): string
-    {
-        return match ($this) {
-            self::ROOT => 'badge-primary',
-            self::REQUIRE => 'badge-secondary',
-            self::REQUIRE_DEV => 'badge-info',
-            self::NPM => 'badge-warning',
-            self::NPM_DEV => 'badge-light',
-        };
-    }
 }
