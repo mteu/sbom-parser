@@ -64,85 +64,11 @@ final readonly class Component
     ) {
     }
 
-    public function getPackageUrl(): ?string
-    {
-        return $this->purl;
-    }
 
-    public function getVersion(): ?string
-    {
-        return $this->version;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getType(): ComponentType
-    {
-        return $this->type;
-    }
-
-    /**
-     * @return License[]
-     */
-    public function getLicenses(): array
-    {
-        return $this->licenses ?? [];
-    }
-
-    /**
-     * @return Component[]
-     */
-    public function getComponents(): array
-    {
-        return $this->components ?? [];
-    }
 
     public function hasComponents(): bool
     {
         return $this->components !== null && count($this->components) > 0;
     }
 
-    /**
-     * @return ExternalReference[]
-     */
-    public function getExternalReferences(): array
-    {
-        return $this->externalReferences ?? [];
-    }
-
-    /**
-     * @return Hash[]
-     */
-    public function getHashes(): array
-    {
-        return $this->hashes ?? [];
-    }
-
-    public function getSupplier(): ?OrganizationalEntity
-    {
-        return $this->supplier;
-    }
-
-    public function getMimeType(): ?string
-    {
-        return $this->mimeType;
-    }
-
-    public function getSwid(): ?SwidTag
-    {
-        return $this->swid;
-    }
-
-    public function getEvidence(): ?ComponentEvidence
-    {
-        return $this->evidence;
-    }
-
-    public function getReleaseNotes(): ?ReleaseNotes
-    {
-        return $this->releaseNotes;
-    }
 }

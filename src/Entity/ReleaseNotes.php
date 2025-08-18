@@ -52,35 +52,4 @@ final readonly class ReleaseNotes
     ) {
     }
 
-    /**
-     * @return string[]
-     */
-    public function getAliases(): array
-    {
-        return $this->aliases ?? [];
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getTags(): array
-    {
-        return $this->tags ?? [];
-    }
-
-    /**
-     * @return Issue[]
-     */
-    public function getResolves(): array
-    {
-        return $this->resolves ?? [];
-    }
-
-    /**
-     * @return Note[]
-     */
-    public function getNotes(): array
-    {
-        return $this->notes ?? [];
-    }
 }

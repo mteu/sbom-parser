@@ -43,19 +43,4 @@ final readonly class Compositions
     ) {
     }
 
-    /**
-     * @return string[]
-     */
-    public function getAssemblies(): array
-    {
-        return $this->assemblies ?? [];
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getDependencies(): array
-    {
-        return $this->dependencies ?? [];
-    }
 }

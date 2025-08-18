@@ -57,62 +57,8 @@ final readonly class Bom
     ) {
     }
 
-    public function getBomFormat(): string
-    {
-        return $this->bomFormat;
-    }
 
-    public function getSpecVersion(): string
-    {
-        return $this->specVersion;
-    }
 
-    public function getSerialNumber(): ?string
-    {
-        return $this->serialNumber;
-    }
-
-    public function getVersion(): ?int
-    {
-        return $this->version;
-    }
-
-    public function getMetadata(): ?Metadata
-    {
-        return $this->metadata;
-    }
-
-    /**
-     * @return Component[]
-     */
-    public function getComponents(): array
-    {
-        return $this->components ?? [];
-    }
-
-    /**
-     * @return Vulnerability[]
-     */
-    public function getVulnerabilities(): array
-    {
-        return $this->vulnerabilities ?? [];
-    }
-
-    /**
-     * @return ExternalReference[]
-     */
-    public function getExternalReferences(): array
-    {
-        return $this->externalReferences ?? [];
-    }
-
-    /**
-     * @return Dependency[]
-     */
-    public function getDependencies(): array
-    {
-        return $this->dependencies ?? [];
-    }
 
     public function hasComponents(): bool
     {
@@ -131,7 +77,7 @@ final readonly class Bom
     {
         $allComponents = [];
 
-        foreach ($this->getComponents() as $component) {
+        foreach (($this->components ?? []) as $component) {
             $allComponents[] = $component;
             $allComponents = array_merge($allComponents, $this->extractNestedComponents($component));
         }
@@ -146,7 +92,7 @@ final readonly class Bom
     {
         $nested = [];
 
-        foreach ($component->getComponents() as $childComponent) {
+        foreach (($component->components ?? []) as $childComponent) {
             $nested[] = $childComponent;
             $nested = array_merge($nested, $this->extractNestedComponents($childComponent));
         }
@@ -161,14 +107,14 @@ final readonly class Bom
     {
         return array_filter(
             $this->getAllComponents(),
-            static fn (Component $component): bool => $component->getType() === $type
+            static fn (Component $component): bool => $component->type === $type
         );
     }
 
     public function findComponentByPurl(string $purl): ?Component
     {
         foreach ($this->getAllComponents() as $component) {
-            if ($component->getPackageUrl() === $purl) {
+            if ($component->purl === $purl) {
                 return $component;
             }
         }
@@ -176,42 +122,16 @@ final readonly class Bom
         return null;
     }
 
-    /**
-     * @return Service[]
-     */
-    public function getServices(): array
-    {
-        return $this->services ?? [];
-    }
 
     public function hasServices(): bool
     {
         return $this->services !== null && count($this->services) > 0;
     }
 
-    /**
-     * @return Compositions[]
-     */
-    public function getCompositions(): array
-    {
-        return $this->compositions ?? [];
-    }
 
     public function hasCompositions(): bool
     {
         return $this->compositions !== null && count($this->compositions) > 0;
     }
 
-    public function getSignature(): ?Signature
-    {
-        return $this->signature;
-    }
-
-    /**
-     * @return Property[]
-     */
-    public function getProperties(): array
-    {
-        return $this->properties ?? [];
-    }
 }

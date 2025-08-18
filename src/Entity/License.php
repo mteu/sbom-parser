@@ -41,23 +41,10 @@ final readonly class License
     ) {
     }
 
-    public function getSpdxId(): ?string
-    {
-        return $this->id;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
 
     public function hasExpression(): bool
     {
         return $this->expression !== null;
     }
 
-    public function getExpression(): ?string
-    {
-        return $this->expression;
-    }
 }

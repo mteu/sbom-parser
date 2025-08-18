@@ -21,26 +21,43 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace mteu\SbomParser\Entity;
+namespace mteu\SbomParser\Tests\Unit\Entity;
+
+use mteu\SbomParser\Entity\License;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
 
 /**
- * Issue entity for release notes.
+ * LicenseTest.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
- * @codeCoverageIgnore
  */
-final readonly class Issue
+#[CoversClass(License::class)]
+final class LicenseTest extends TestCase
 {
-    public function __construct(
-        public string $type,
-        public string $id,
-        public ?string $name = null,
-        public ?string $description = null,
-        public ?string $source = null,
-        /** @var string[]|null */
-        public ?array $references = null,
-    ) {
+    #[Test]
+    public function hasExpressionReturnsFalseWhenNull(): void
+    {
+        $license = new License(id: 'MIT');
+
+        self::assertFalse($license->hasExpression());
     }
 
+    #[Test]
+    public function hasExpressionReturnsTrueWhenExpressionExists(): void
+    {
+        $license = new License(expression: 'MIT OR Apache-2.0');
+
+        self::assertTrue($license->hasExpression());
+    }
+
+    #[Test]
+    public function hasExpressionReturnsTrueWhenExpressionIsEmptyString(): void
+    {
+        $license = new License(expression: '');
+
+        self::assertTrue($license->hasExpression());
+    }
 }

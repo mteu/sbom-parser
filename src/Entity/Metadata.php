@@ -48,24 +48,4 @@ final readonly class Metadata
     ) {
     }
 
-    public function getTimestamp(): ?\DateTimeImmutable
-    {
-        return $this->timestamp;
-    }
-
-    /**
-     * @return Tool[]
-     */
-    public function getTools(): array
-    {
-        return $this->tools ?? [];
-    }
-
-    /**
-     * @return OrganizationalEntity[]
-     */
-    public function getAuthors(): array
-    {
-        return $this->authors ?? [];
-    }
 }
