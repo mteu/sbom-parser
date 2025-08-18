@@ -38,17 +38,17 @@ Represents the complete SBOM with helper methods:
 
 ```php
 // Access basic properties
-$bom->getBomFormat();     // "CycloneDX"
-$bom->getSpecVersion();   // "1.6"
-$bom->getSerialNumber();  // Optional serial number
+$bom->bomFormat;          // "CycloneDX"
+$bom->specVersion;        // "1.6"
+$bom->serialNumber;       // Optional serial number
 
 // Get components
-$components = $bom->getComponents();        // Direct components
+$components = $bom->components ?? [];       // Direct components
 $allComponents = $bom->getAllComponents();  // Including nested
 
 // Get vulnerabilities and services
-$vulnerabilities = $bom->getVulnerabilities();
-$services = $bom->getServices();
+$vulnerabilities = $bom->vulnerabilities ?? [];
+$services = $bom->services ?? [];
 
 // Find specific components
 $libraries = $bom->findComponentsByType(ComponentType::LIBRARY);
@@ -60,13 +60,14 @@ $component = $bom->findComponentByPurl('pkg:npm/lodash@4.17.21');
 Represents individual software components:
 
 ```php
-$component->getName();          // Component name
-$component->getVersion();       // Version string
-$component->getType();          // ComponentType enum
-$component->getPackageUrl();    // PURL if available
-$component->getLicenses();      // Array of License objects
-$component->getHashes();        // Array of Hash objects
-$component->getComponents();    // Nested components
+$component->name;               // Component name
+$component->version;            // Version string
+$component->type;               // ComponentType enum
+$component->purl;               // PURL if available
+$component->licenses ?? [];     // Array of License objects
+$component->hashes ?? [];       // Array of Hash objects
+$component->components ?? [];   // Nested components
+$component->hasComponents();    // Check if has nested components
 ```
 
 ## File Validation
