@@ -20,7 +20,7 @@ $bom = $parser->parseFromFile('/path/to/sbom.json');
 
 // Access components and vulnerabilities
 $components = $bom->getAllComponents();
-$vulnerabilities = $bom->getVulnerabilities();
+$vulnerabilities = $bom->vulnerabilities;
 ```
 
 See [detailed documentation](docs/cyclonedx-parser.md) for complete usage examples and API reference.
