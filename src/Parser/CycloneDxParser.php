@@ -166,7 +166,9 @@ final readonly class CycloneDxParser implements Parser
     }
 
     /**
-     * Validate that SBOM path
+     * Validate that SBOM path is secure and accessible
+     *
+     * @throws SbomParseException
      */
     private function validateSbomPath(string $sbomFilePath): void
     {
@@ -175,14 +177,30 @@ final readonly class CycloneDxParser implements Parser
             throw SbomParseException::validationFailed('SBOM file path must be absolute');
         }
 
-        $realPath = realpath(dirname($sbomFilePath));
-        if ($realPath === false) {
+        // Check for directory traversal attempts using multiple methods
+        if (str_contains($sbomFilePath, '..') ||
+            str_contains($sbomFilePath, '%2e%2e') ||
+            str_contains($sbomFilePath, '%2E%2E')) {
+            throw SbomParseException::validationFailed('Directory traversal not allowed in SBOM path');
+        }
+
+        // Validate directory exists and is accessible
+        $directory = dirname($sbomFilePath);
+        $realDirectory = realpath($directory);
+        if ($realDirectory === false) {
             throw SbomParseException::validationFailed('SBOM directory does not exist or is not accessible');
         }
 
-        // Check for directory traversal attempts
-        if (str_contains($sbomFilePath, '..')) {
-            throw SbomParseException::validationFailed('Directory traversal not allowed in SBOM path');
+        // Construct the expected file path and verify it matches the real path
+        $fileName = basename($sbomFilePath);
+        $expectedRealPath = $realDirectory . '/' . $fileName;
+
+        // If file exists, verify the real path matches expected path (prevents symlink attacks)
+        if (file_exists($sbomFilePath)) {
+            $realFilePath = realpath($sbomFilePath);
+            if ($realFilePath === false || $realFilePath !== $expectedRealPath) {
+                throw SbomParseException::validationFailed('Directory traversal not allowed in SBOM path');
+            }
         }
 
         // Ensure reasonable file extension
@@ -199,6 +217,7 @@ final readonly class CycloneDxParser implements Parser
 
     /**
      * @param array<string, mixed> $data
+     * @throws SbomParseException
      */
     private function validateDataStructure(array $data): void
     {

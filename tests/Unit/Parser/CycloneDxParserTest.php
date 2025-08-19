@@ -219,6 +219,18 @@ final class CycloneDxParserTest extends TestCase
             'Directory traversal not allowed in SBOM path',
         ];
 
+        yield 'path with URL-encoded directory traversal (lowercase)' => [
+            '/tmp/%2e%2e/etc/sbom.json',
+            true,
+            'Directory traversal not allowed in SBOM path',
+        ];
+
+        yield 'path with URL-encoded directory traversal (uppercase)' => [
+            '/tmp/%2E%2E/etc/sbom.json',
+            true,
+            'Directory traversal not allowed in SBOM path',
+        ];
+
         yield 'path without extension' => [
             '/tmp/noextension',
             true,
