@@ -377,4 +377,30 @@ final class CycloneDxParserTest extends TestCase
             'Valinor mapping failed',
         ];
     }
+
+    #[Test]
+    #[DataProvider('formatValuePreviewDataProvider')]
+    public function formatValuePreviewReturnsCorrectType(mixed $input, string $expected): void
+    {
+        $reflection = new \ReflectionMethod(CycloneDxParser::class, 'formatValuePreview');
+        $result = $reflection->invoke($this->subject, $input);
+
+        self::assertSame($expected, $result);
+    }
+
+    /** @return \Generator<string, array{mixed, string}> */
+    public static function formatValuePreviewDataProvider(): \Generator
+    {
+        yield 'null' => [null, 'null'];
+        yield 'true' => [true, 'true'];
+        yield 'false' => [false, 'false'];
+        yield 'short string' => ['test', 'test'];
+        yield 'long string' => [str_repeat('x', 101), str_repeat('x', 100) . '...'];
+        yield 'integer' => [42, '42'];
+        yield 'float' => [3.14, '3.14'];
+        yield 'empty array' => [[], '[]'];
+        yield 'array with keys' => [['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4], 'array[4] with keys: a, b, c, ...'];
+        yield 'object' => [new \stdClass(), 'object(stdClass)'];
+        yield 'resource' => [tmpfile(), 'unknown'];
+    }
 }
