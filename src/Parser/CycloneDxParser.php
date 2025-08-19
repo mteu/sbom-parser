@@ -45,6 +45,9 @@ use mteu\SbomParser\Exception\SbomParseException;
  */
 final readonly class CycloneDxParser implements Parser
 {
+    private const int MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    private const int JSON_MAX_DEPTH = 64;
+
     private TreeMapper $mapper;
 
     public function __construct()
@@ -68,6 +71,17 @@ final readonly class CycloneDxParser implements Parser
             throw SbomParseException::validationFailed(sprintf('File not readable: %s', $filePath));
         }
 
+        $fileSize = filesize($filePath);
+        if ($fileSize === false) {
+            throw SbomParseException::validationFailed(sprintf('Could not determine file size: %s', $filePath));
+        }
+
+        if ($fileSize > self::MAX_FILE_SIZE) {
+            throw SbomParseException::validationFailed(
+                sprintf('File too large: %d bytes (maximum: %d bytes)', $fileSize, self::MAX_FILE_SIZE)
+            );
+        }
+
         $content = file_get_contents($filePath);
         if ($content === false) {
             throw SbomParseException::validationFailed(sprintf('Could not read file: %s', $filePath));
@@ -79,7 +93,7 @@ final readonly class CycloneDxParser implements Parser
     public function parseFromJson(string $json): Bom
     {
         try {
-            $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+            $data = json_decode($json, true, self::JSON_MAX_DEPTH, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
             throw SbomParseException::invalidJson($e->getMessage(), $e);
         }
@@ -88,7 +102,6 @@ final readonly class CycloneDxParser implements Parser
             throw SbomParseException::validationFailed('Decoded JSON is not an array');
         }
 
-        // Ensure we have a string-keyed array for type safety
         /** @var array<string, mixed> $data */
         return $this->parseFromArray($data);
     }
@@ -139,7 +152,7 @@ final readonly class CycloneDxParser implements Parser
     public function isValidSbomJson(string $json): bool
     {
         try {
-            $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+            $data = json_decode($json, true, self::JSON_MAX_DEPTH, JSON_THROW_ON_ERROR);
 
             if (!is_array($data)) {
                 return false;
@@ -184,7 +197,6 @@ final readonly class CycloneDxParser implements Parser
             throw SbomParseException::validationFailed('Directory traversal not allowed in SBOM path');
         }
 
-        // Validate directory exists and is accessible
         $directory = dirname($sbomFilePath);
         $realDirectory = realpath($directory);
         if ($realDirectory === false) {
@@ -195,7 +207,7 @@ final readonly class CycloneDxParser implements Parser
         $fileName = basename($sbomFilePath);
         $expectedRealPath = $realDirectory . '/' . $fileName;
 
-        // If file exists, verify the real path matches expected path (prevents symlink attacks)
+        // If the file exists, verify the real path matches the expected path
         if (file_exists($sbomFilePath)) {
             $realFilePath = realpath($sbomFilePath);
             if ($realFilePath === false || $realFilePath !== $expectedRealPath) {
