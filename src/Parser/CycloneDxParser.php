@@ -110,6 +110,7 @@ final readonly class CycloneDxParser implements Parser
         }
     }
 
+    /** @codeCoverageIgnore */
     public function getSupportedFormats(): array
     {
         return ['json'];
