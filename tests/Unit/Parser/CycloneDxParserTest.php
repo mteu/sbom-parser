@@ -263,6 +263,28 @@ final class CycloneDxParserTest extends TestCase
     }
 
     #[Test]
+    public function parseFromFileThrowsExceptionForFileTooLarge(): void
+    {
+        $filePath = tempnam($this->tempOutputDir, 'large_file') . '.json';
+
+        // Create a file larger than MAX_FILE_SIZE (50MB)
+        // We'll create a 52MB file with repeated content
+        $largeContent = str_repeat('a', 1024 * 1024); // 1MB of 'a'
+        $handle = fopen($filePath, 'w');
+        if ($handle === false) {
+            self::fail('Could not open file for writing');
+        }
+        for ($i = 0; $i < 52; $i++) { // Write 52MB
+            fwrite($handle, $largeContent);
+        }
+        fclose($handle);
+
+        $this->expectException(SbomParseException::class);
+        $this->expectExceptionMessage('File too large');
+        $this->subject->parseFromFile($filePath);
+    }
+
+    #[Test]
     #[DataProvider('parseFromJsonProvider')]
     public function parseFromJson(string $json, bool $expectsException, string $expectedMessage = ''): void
     {
