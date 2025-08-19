@@ -23,9 +23,11 @@ declare(strict_types=1);
 
 namespace mteu\SbomParser\Tests\Unit\Entity;
 
+use mteu\SbomParser\Entity\AggregateType;
 use mteu\SbomParser\Entity\Bom;
 use mteu\SbomParser\Entity\Component;
 use mteu\SbomParser\Entity\ComponentType;
+use mteu\SbomParser\Entity\Compositions;
 use mteu\SbomParser\Entity\Service;
 use mteu\SbomParser\Entity\Vulnerability\Vulnerability;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -98,6 +100,31 @@ final class BomTest extends TestCase
         $bom = new Bom('CycloneDX', '1.6', components: [$component]);
 
         self::assertTrue($bom->hasComponents());
+    }
+
+    #[Test]
+    public function hasCompositionsReturnsFalseWhenNull(): void
+    {
+        $bom = new Bom('CycloneDX', '1.6');
+
+        self::assertFalse($bom->hasCompositions());
+    }
+
+    #[Test]
+    public function hasCompositionsReturnsFalseWhenEmptyArray(): void
+    {
+        $bom = new Bom('CycloneDX', '1.6', compositions: []);
+
+        self::assertFalse($bom->hasCompositions());
+    }
+
+    #[Test]
+    public function hasCompositionsReturnsTrueWhenCompositionsExist(): void
+    {
+        $composition = new Compositions(AggregateType::COMPLETE);
+        $bom = new Bom('CycloneDX', '1.6', compositions: [$composition]);
+
+        self::assertTrue($bom->hasCompositions());
     }
 
     #[Test]
