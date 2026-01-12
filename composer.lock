@@ -511,16 +511,16 @@
         },
         {
             "name": "cyclonedx/cyclonedx-library",
-            "version": "v3.9.0",
+            "version": "v3.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CycloneDX/cyclonedx-php-library.git",
-                "reference": "0301e2c16ede56d0377626f581e5fab98ec987a3"
+                "reference": "e6bb0fca8d89f1e34755900c361061a6f5253e49"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-library/zipball/0301e2c16ede56d0377626f581e5fab98ec987a3",
-                "reference": "0301e2c16ede56d0377626f581e5fab98ec987a3",
+                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-library/zipball/e6bb0fca8d89f1e34755900c361061a6f5253e49",
+                "reference": "e6bb0fca8d89f1e34755900c361061a6f5253e49",
                 "shasum": ""
             },
             "require": {
@@ -596,7 +596,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2025-12-02T10:32:20+00:00"
+            "time": "2026-01-07T13:45:46+00:00"
         },
         {
             "name": "cyclonedx/cyclonedx-php-composer",
@@ -6472,23 +6472,23 @@
         },
         {
             "name": "symplify/phpstan-rules",
-            "version": "14.9.9",
+            "version": "14.9.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/phpstan-rules.git",
-                "reference": "574515bd7fcd28222b12987fdf6a7ac813163edf"
+                "reference": "5ea4bbd9357cba253aada506dd96d37d7069ac3b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/574515bd7fcd28222b12987fdf6a7ac813163edf",
-                "reference": "574515bd7fcd28222b12987fdf6a7ac813163edf",
+                "url": "https://api.github.com/repos/symplify/phpstan-rules/zipball/5ea4bbd9357cba253aada506dd96d37d7069ac3b",
+                "reference": "5ea4bbd9357cba253aada506dd96d37d7069ac3b",
                 "shasum": ""
             },
             "require": {
                 "nette/utils": "^3.2|^4.0",
                 "php": "^7.4|^8.0",
-                "phpstan/phpstan": "^2.1.22",
-                "webmozart/assert": "^1.11"
+                "phpstan/phpstan": "^2.1.33",
+                "webmozart/assert": "^1.12 || ^2.0"
             },
             "type": "phpstan-extension",
             "extra": {
@@ -6513,7 +6513,7 @@
             "description": "Set of Symplify rules for PHPStan",
             "support": {
                 "issues": "https://github.com/symplify/phpstan-rules/issues",
-                "source": "https://github.com/symplify/phpstan-rules/tree/14.9.9"
+                "source": "https://github.com/symplify/phpstan-rules/tree/14.9.11"
             },
             "funding": [
                 {
@@ -6525,7 +6525,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-01-04T11:56:33+00:00"
+            "time": "2026-01-05T13:53:59+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -6579,23 +6579,23 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "1.12.1",
+            "version": "2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "9be6926d8b485f55b9229203f962b51ed377ba68"
+                "reference": "bdbabc199a7ba9965484e4725d66170e5711323b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/9be6926d8b485f55b9229203f962b51ed377ba68",
-                "reference": "9be6926d8b485f55b9229203f962b51ed377ba68",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/bdbabc199a7ba9965484e4725d66170e5711323b",
+                "reference": "bdbabc199a7ba9965484e4725d66170e5711323b",
                 "shasum": ""
             },
             "require": {
                 "ext-ctype": "*",
                 "ext-date": "*",
                 "ext-filter": "*",
-                "php": "^7.2 || ^8.0"
+                "php": "^8.2"
             },
             "suggest": {
                 "ext-intl": "",
@@ -6605,7 +6605,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.10-dev"
+                    "dev-feature/2-0": "2.0-dev"
                 }
             },
             "autoload": {
@@ -6621,6 +6621,10 @@
                 {
                     "name": "Bernhard Schussek",
                     "email": "bschussek@gmail.com"
+                },
+                {
+                    "name": "Woody Gilk",
+                    "email": "woody.gilk@gmail.com"
                 }
             ],
             "description": "Assertions to validate method input/output with nice error messages.",
@@ -6631,9 +6635,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/1.12.1"
+                "source": "https://github.com/webmozarts/assert/tree/2.1.1"
             },
-            "time": "2025-10-29T15:56:20+00:00"
+            "time": "2026-01-08T11:28:40+00:00"
         }
     ],
     "aliases": [],
