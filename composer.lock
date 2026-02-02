@@ -1139,35 +1139,35 @@
         },
         {
             "name": "ergebnis/phpstan-rules",
-            "version": "2.12.0",
+            "version": "2.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ergebnis/phpstan-rules.git",
-                "reference": "c4e0121a937b3b551f800a86e7d78794da2783ea"
+                "reference": "f69db86b98595c34fc1f61c89fe3b380141aa519"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ergebnis/phpstan-rules/zipball/c4e0121a937b3b551f800a86e7d78794da2783ea",
-                "reference": "c4e0121a937b3b551f800a86e7d78794da2783ea",
+                "url": "https://api.github.com/repos/ergebnis/phpstan-rules/zipball/f69db86b98595c34fc1f61c89fe3b380141aa519",
+                "reference": "f69db86b98595c34fc1f61c89fe3b380141aa519",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
                 "php": "~7.4.0 || ~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-                "phpstan/phpstan": "^2.1.8"
+                "phpstan/phpstan": "^2.1.35"
             },
             "require-dev": {
                 "codeception/codeception": "^4.0.0 || ^5.0.0",
                 "doctrine/orm": "^2.20.0 || ^3.3.0",
-                "ergebnis/composer-normalize": "^2.47.0",
-                "ergebnis/license": "^2.6.0",
-                "ergebnis/php-cs-fixer-config": "^6.54.0",
+                "ergebnis/composer-normalize": "^2.49.0",
+                "ergebnis/license": "^2.7.0",
+                "ergebnis/php-cs-fixer-config": "^6.59.0",
                 "ergebnis/phpunit-slow-test-detector": "^2.20.0",
                 "fakerphp/faker": "^1.24.1",
                 "phpstan/extension-installer": "^1.4.3",
                 "phpstan/phpstan-deprecation-rules": "^2.0.3",
-                "phpstan/phpstan-phpunit": "^2.0.7",
-                "phpstan/phpstan-strict-rules": "^2.0.6",
+                "phpstan/phpstan-phpunit": "^2.0.12",
+                "phpstan/phpstan-strict-rules": "^2.0.8",
                 "phpunit/phpunit": "^9.6.21",
                 "psr/container": "^2.0.2",
                 "symfony/finder": "^5.4.45",
@@ -1208,7 +1208,7 @@
                 "security": "https://github.com/ergebnis/phpstan-rules/blob/main/.github/SECURITY.md",
                 "source": "https://github.com/ergebnis/phpstan-rules"
             },
-            "time": "2025-09-07T13:31:33+00:00"
+            "time": "2026-01-27T17:13:06+00:00"
         },
         {
             "name": "evenement/evenement",
@@ -2514,16 +2514,16 @@
         },
         {
             "name": "phpstan/phpstan-strict-rules",
-            "version": "2.0.7",
+            "version": "2.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-                "reference": "d6211c46213d4181054b3d77b10a5c5cb0d59538"
+                "reference": "1ed9e626a37f7067b594422411539aa807190573"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/d6211c46213d4181054b3d77b10a5c5cb0d59538",
-                "reference": "d6211c46213d4181054b3d77b10a5c5cb0d59538",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/1ed9e626a37f7067b594422411539aa807190573",
+                "reference": "1ed9e626a37f7067b594422411539aa807190573",
                 "shasum": ""
             },
             "require": {
@@ -2556,9 +2556,9 @@
             "description": "Extra strict and opinionated rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
-                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.0.7"
+                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.0.8"
             },
-            "time": "2025-09-26T11:19:08+00:00"
+            "time": "2026-01-27T08:10:25+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -4765,16 +4765,16 @@
         },
         {
             "name": "spaze/phpstan-disallowed-calls",
-            "version": "v4.7.0",
+            "version": "v4.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spaze/phpstan-disallowed-calls.git",
-                "reference": "0765102eeb154da8a3bcef3200375bb4297a2141"
+                "reference": "4be6274bc23a2c44817690feda3ae4189496c246"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spaze/phpstan-disallowed-calls/zipball/0765102eeb154da8a3bcef3200375bb4297a2141",
-                "reference": "0765102eeb154da8a3bcef3200375bb4297a2141",
+                "url": "https://api.github.com/repos/spaze/phpstan-disallowed-calls/zipball/4be6274bc23a2c44817690feda3ae4189496c246",
+                "reference": "4be6274bc23a2c44817690feda3ae4189496c246",
                 "shasum": ""
             },
             "require": {
@@ -4787,7 +4787,7 @@
                 "php-parallel-lint/php-parallel-lint": "^1.2",
                 "phpstan/phpstan-deprecation-rules": "^1.2 || ^2.0",
                 "phpunit/phpunit": "^8.5.14 || ^10.1 || ^11.0 || ^12.0",
-                "shipmonk/dead-code-detector": "^0.13.2",
+                "shipmonk/dead-code-detector": "^0.14.1",
                 "spaze/coding-standard": "^1.8"
             },
             "type": "phpstan-extension",
@@ -4820,7 +4820,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spaze/phpstan-disallowed-calls/issues",
-                "source": "https://github.com/spaze/phpstan-disallowed-calls/tree/v4.7.0"
+                "source": "https://github.com/spaze/phpstan-disallowed-calls/tree/v4.7.1"
             },
             "funding": [
                 {
@@ -4828,7 +4828,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-01T23:01:09+00:00"
+            "time": "2026-01-31T03:50:05+00:00"
         },
         {
             "name": "staabm/side-effects-detector",
@@ -5272,16 +5272,16 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v8.0.4",
+            "version": "v8.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
-                "reference": "42e48eb02e07d5f3771d194d67da117eb824c8c1"
+                "reference": "8bd576e97c67d45941365bf824e18dc8538e6eb0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/42e48eb02e07d5f3771d194d67da117eb824c8c1",
-                "reference": "42e48eb02e07d5f3771d194d67da117eb824c8c1",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/8bd576e97c67d45941365bf824e18dc8538e6eb0",
+                "reference": "8bd576e97c67d45941365bf824e18dc8538e6eb0",
                 "shasum": ""
             },
             "require": {
@@ -5316,7 +5316,7 @@
             "description": "Finds files and directories via an intuitive fluent interface",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/finder/tree/v8.0.4"
+                "source": "https://github.com/symfony/finder/tree/v8.0.5"
             },
             "funding": [
                 {
@@ -5336,20 +5336,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-01-12T12:37:40+00:00"
+            "time": "2026-01-26T15:08:38+00:00"
         },
         {
             "name": "symfony/mime",
-            "version": "v8.0.4",
+            "version": "v8.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/mime.git",
-                "reference": "6b767f21415bec1a247f5d1a4777986e24b05174"
+                "reference": "543d01b6ee4b8eb80ce9349186ad530eb8704252"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/mime/zipball/6b767f21415bec1a247f5d1a4777986e24b05174",
-                "reference": "6b767f21415bec1a247f5d1a4777986e24b05174",
+                "url": "https://api.github.com/repos/symfony/mime/zipball/543d01b6ee4b8eb80ce9349186ad530eb8704252",
+                "reference": "543d01b6ee4b8eb80ce9349186ad530eb8704252",
                 "shasum": ""
             },
             "require": {
@@ -5359,13 +5359,13 @@
             },
             "conflict": {
                 "egulias/email-validator": "~3.0.0",
-                "phpdocumentor/reflection-docblock": "<3.2.2",
-                "phpdocumentor/type-resolver": "<1.4.0"
+                "phpdocumentor/reflection-docblock": "<5.2|>=6",
+                "phpdocumentor/type-resolver": "<1.5.1"
             },
             "require-dev": {
                 "egulias/email-validator": "^2.1.10|^3.1|^4",
                 "league/html-to-markdown": "^5.0",
-                "phpdocumentor/reflection-docblock": "^3.0|^4.0|^5.0",
+                "phpdocumentor/reflection-docblock": "^5.2",
                 "symfony/dependency-injection": "^7.4|^8.0",
                 "symfony/process": "^7.4|^8.0",
                 "symfony/property-access": "^7.4|^8.0",
@@ -5402,7 +5402,7 @@
                 "mime-type"
             ],
             "support": {
-                "source": "https://github.com/symfony/mime/tree/v8.0.4"
+                "source": "https://github.com/symfony/mime/tree/v8.0.5"
             },
             "funding": [
                 {
@@ -5422,7 +5422,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-01-08T22:36:47+00:00"
+            "time": "2026-01-27T09:06:10+00:00"
         },
         {
             "name": "symfony/options-resolver",
