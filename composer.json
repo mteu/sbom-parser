@@ -22,7 +22,7 @@
         "phpstan/extension-installer": "*",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-phpunit": "^2.0",
-        "phpunit/phpcov": "^10.0 || ^11.0.0",
+        "phpunit/phpcov": "^12.0.0",
         "phpunit/phpunit": "^11.5 || ^12.1",
         "shipmonk/composer-dependency-analyser": "*"
     },
