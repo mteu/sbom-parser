@@ -4060,16 +4060,16 @@
         },
         {
             "name": "sebastian/environment",
-            "version": "8.0.3",
+            "version": "8.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/environment.git",
-                "reference": "24a711b5c916efc6d6e62aa65aa2ec98fef77f68"
+                "reference": "7b8842c2d8e85d0c3a5831236bf5869af6ab2a11"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/24a711b5c916efc6d6e62aa65aa2ec98fef77f68",
-                "reference": "24a711b5c916efc6d6e62aa65aa2ec98fef77f68",
+                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/7b8842c2d8e85d0c3a5831236bf5869af6ab2a11",
+                "reference": "7b8842c2d8e85d0c3a5831236bf5869af6ab2a11",
                 "shasum": ""
             },
             "require": {
@@ -4112,7 +4112,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/environment/issues",
                 "security": "https://github.com/sebastianbergmann/environment/security/policy",
-                "source": "https://github.com/sebastianbergmann/environment/tree/8.0.3"
+                "source": "https://github.com/sebastianbergmann/environment/tree/8.0.4"
             },
             "funding": [
                 {
@@ -4132,7 +4132,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-12T14:11:56+00:00"
+            "time": "2026-03-15T07:05:40+00:00"
         },
         {
             "name": "sebastian/exporter",
@@ -4797,16 +4797,16 @@
         },
         {
             "name": "spaze/phpstan-disallowed-calls",
-            "version": "v4.8.0",
+            "version": "v4.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spaze/phpstan-disallowed-calls.git",
-                "reference": "ebbf057755ea0acfbf227d113cac5e3f80aab83a"
+                "reference": "e80372a55bdad13d22a62fdf2116a67a5438c34b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spaze/phpstan-disallowed-calls/zipball/ebbf057755ea0acfbf227d113cac5e3f80aab83a",
-                "reference": "ebbf057755ea0acfbf227d113cac5e3f80aab83a",
+                "url": "https://api.github.com/repos/spaze/phpstan-disallowed-calls/zipball/e80372a55bdad13d22a62fdf2116a67a5438c34b",
+                "reference": "e80372a55bdad13d22a62fdf2116a67a5438c34b",
                 "shasum": ""
             },
             "require": {
@@ -4819,7 +4819,7 @@
                 "php-parallel-lint/php-parallel-lint": "^1.2",
                 "phpstan/phpstan-deprecation-rules": "^1.2 || ^2.0",
                 "phpunit/phpunit": "^8.5.14 || ^10.1 || ^11.0 || ^12.0 || ^13.0",
-                "shipmonk/dead-code-detector": "^0.14.1",
+                "shipmonk/dead-code-detector": "^0.15.0",
                 "spaze/coding-standard": "^1.8"
             },
             "type": "phpstan-extension",
@@ -4852,7 +4852,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spaze/phpstan-disallowed-calls/issues",
-                "source": "https://github.com/spaze/phpstan-disallowed-calls/tree/v4.8.0"
+                "source": "https://github.com/spaze/phpstan-disallowed-calls/tree/v4.9.0"
             },
             "funding": [
                 {
@@ -4860,7 +4860,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-07T17:05:49+00:00"
+            "time": "2026-03-13T22:27:50+00:00"
         },
         {
             "name": "staabm/side-effects-detector",
