@@ -3058,16 +3058,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.18",
+            "version": "12.5.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "e14baea54fd6dccc14c48b498f4d1a8eb3d2390d"
+                "reference": "92f7744ca5f5701c9e4b4a60d9e143f2d84956da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/e14baea54fd6dccc14c48b498f4d1a8eb3d2390d",
-                "reference": "e14baea54fd6dccc14c48b498f4d1a8eb3d2390d",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/92f7744ca5f5701c9e4b4a60d9e143f2d84956da",
+                "reference": "92f7744ca5f5701c9e4b4a60d9e143f2d84956da",
                 "shasum": ""
             },
             "require": {
@@ -3136,7 +3136,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.18"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.19"
             },
             "funding": [
                 {
@@ -3144,7 +3144,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-04-13T05:03:53+00:00"
+            "time": "2026-04-13T05:38:19+00:00"
         },
         {
             "name": "psr/container",
