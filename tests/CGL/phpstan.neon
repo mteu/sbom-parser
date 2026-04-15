@@ -6,6 +6,7 @@ parameters:
 		- ../../src
 		- ../../tests/Unit
 	level: max
+	reportNonIntStringArrayKey: true
 	treatPhpDocTypesAsCertain: false
 
 	ergebnis:
@@ -19,4 +20,3 @@ parameters:
 		- identifier: ergebnis.noNullableReturnTypeDeclaration
 		- identifier: ergebnis.noParameterWithNullDefaultValue
 		- identifier: ergebnis.noParameterWithNullableTypeDeclaration
-		- message: '#Interface must be located in "Contract" or "Contracts" namespace#'
