@@ -45,6 +45,7 @@ use mteu\SbomParser\Exception\SbomParseException;
  */
 final readonly class CycloneDxParser implements Parser
 {
+    public const array SUPPORTED_VERSIONS = ['1.4', '1.5', '1.6', '1.7'];
     private const int MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
     private const int JSON_MAX_DEPTH = 64;
 
@@ -277,8 +278,7 @@ final readonly class CycloneDxParser implements Parser
             throw SbomParseException::validationFailed('Field specVersion must be a string');
         }
 
-        $supportedVersions = ['1.4', '1.5', '1.6', '1.7'];
-        $supported = array_filter($supportedVersions, fn (string $v) => str_starts_with($specVersion, $v)) !== [];
+        $supported = array_filter(self::SUPPORTED_VERSIONS, fn (string $version) => str_starts_with($specVersion, $version)) !== [];
 
         if (!$supported) {
             throw SbomParseException::unsupportedVersion($specVersion);
