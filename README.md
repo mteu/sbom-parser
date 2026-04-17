@@ -9,7 +9,26 @@
 # CycloneDX SBOM Parser
 </div>
 
-CycloneDX SBOM (Software Bill of Materials) parser for PHP 8.3+. Supports [CycloneDX 1.4+ specifications](https://github.com/CycloneDX/specification) including components, vulnerabilities, and metadata with full immutable entity design using Valinor for type mapping.
+CycloneDX SBOM (Software Bill of Materials) parser for PHP 8.3+. Supports
+[CycloneDX 1.4+ specifications](https://github.com/CycloneDX/specification) including components, vulnerabilities, and
+metadata with full immutable entity design using Valinor for type mapping.
+
+> [!NOTE]
+> Why this package?
+>
+> The CycloneDX ecosystem provides an official PHP library
+> ([`cyclonedx/cyclonedx-library`](https://github.com/CycloneDX/cyclonedx-php-library))
+> and a [Composer plugin](https://github.com/CycloneDX/cyclonedx-php-composer) for
+> generating SBOMs. These tools are designed to produce BOMs as part of your build
+> pipeline — not for consuming them in application code.
+>
+> This package aims to fill a different gap: Reading and inspecting existing SBOM
+> files.
+>
+> If your application needs to parse a CycloneDX SBOM and work with its data —
+> querying components, checking vulnerabilities, reading metadata — you need a
+> lightweight, read-only library with clean, type-safe objects. That is what this
+> package aims to provide.
 
 ## ⚡️ Quick Start
 ```php
