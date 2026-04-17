@@ -40,6 +40,9 @@ jobs:
       - name: Run unit tests
         run: composer test:unit
 
+      - name: Run integration tests
+        run: composer test:integration
+
   tests-coverage:
     name: Test coverage
     runs-on: ubuntu-latest

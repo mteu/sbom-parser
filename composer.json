@@ -18,6 +18,7 @@
         "cyclonedx/cyclonedx-php-composer": "^6.0",
         "ergebnis/composer-normalize": "^2.28",
         "friendsofphp/php-cs-fixer": "^3.8",
+        "justinrainbow/json-schema": "^6.8",
         "mteu/zealous-stan": "^0.6.3",
         "phpstan/extension-installer": "*",
         "phpstan/phpstan": "^2.1",
@@ -55,15 +56,18 @@
         "lint": "@cgl lint",
         "sca": "@cgl sca",
         "test": [
-            "@test:unit"
+            "@test:unit",
+            "@test:integration"
         ],
         "test:coverage": [
             "@test:coverage:unit",
+            "@test:coverage:integration",
             "@test:coverage:merge"
         ],
+        "test:coverage:integration": "phpunit -c phpunit.integration.xml",
         "test:coverage:merge": "phpcov merge --html .build/coverage/merged_html --clover .build/coverage/clover.xml --text php://stdout .build/coverage/php ",
         "test:coverage:unit": "phpunit -c phpunit.unit.xml",
-        "test:functional": "@test:coverage:functional --no-coverage",
+        "test:integration": "@test:coverage:integration --no-coverage",
         "test:unit": "@test:coverage:unit --no-coverage"
     }
 }

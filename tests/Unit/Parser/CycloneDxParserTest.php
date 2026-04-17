@@ -100,7 +100,7 @@ final class CycloneDxParserTest extends TestCase
     public function validatingSbomFileSucceedsForAProperFile(): void
     {
         self::assertTrue(
-            $this->subject->isValidSbomFile(dirname(__DIR__, ) . '/Fixtures/cdx.sbom.json')
+            $this->subject->isValidSbomFile(dirname(__DIR__, 2) . '/Fixtures/sbom/bom-1.5.json')
         );
     }
 
@@ -213,7 +213,7 @@ final class CycloneDxParserTest extends TestCase
     public static function validateSbomPathProvider(): \Generator
     {
         yield 'valid absolute path with json extension' => [
-            dirname(__DIR__) . '/Fixtures/cdx.sbom.json',
+            dirname(__DIR__, 2) . '/Fixtures/sbom/bom-1.5.json',
             false,
             '',
         ];
@@ -255,7 +255,7 @@ final class CycloneDxParserTest extends TestCase
         ];
 
         yield 'file not found' => [
-            dirname(__DIR__) . '/Fixtures/nonexistent.json',
+            dirname(__DIR__, 2) . '/Fixtures/sbom/nonexistent.json',
             true,
             'File not found',
         ];
