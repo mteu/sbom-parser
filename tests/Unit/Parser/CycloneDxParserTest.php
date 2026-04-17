@@ -110,6 +110,7 @@ final class CycloneDxParserTest extends TestCase
         $this->runParserTest(fn () => $this->subject->parseFromArray($data), $expectsException, $expectedMessage);
     }
 
+    /** @return \Generator<string, array{array<string, mixed>, bool, string}> */
     public static function validateDataStructureProvider(): \Generator
     {
         foreach (CycloneDxParser::SUPPORTED_VERSIONS as $version) {
@@ -302,6 +303,25 @@ final class CycloneDxParserTest extends TestCase
         self::assertSame($expectedVersion, $bom->specVersion);
     }
 
+    /** @return \Generator<string, array{string}> */
+    public static function parseFromJsonFixtureProvider(): \Generator
+    {
+        foreach (CycloneDxParser::SUPPORTED_VERSIONS as $version) {
+            yield "bom-{$version}.json" => [self::fixtureDir() . "/bom-{$version}.json"];
+        }
+    }
+
+    #[Test]
+    #[DataProvider('parseFromJsonFixtureProvider')]
+    public function parseFromJsonSucceedsForFixture(string $fixturePath): void
+    {
+        $content = file_get_contents($fixturePath);
+        self::assertNotFalse($content, "Could not read fixture: $fixturePath");
+
+        $bom = $this->subject->parseFromJson($content);
+        self::assertInstanceOf(Bom::class, $bom);
+    }
+
     #[Test]
     #[DataProvider('parseFromJsonProvider')]
     public function parseFromJson(string $json, bool $expectsException, string $expectedMessage = ''): void
@@ -312,13 +332,6 @@ final class CycloneDxParserTest extends TestCase
     /** @return \Generator<string, array{string, bool, string}> */
     public static function parseFromJsonProvider(): \Generator
     {
-        foreach (CycloneDxParser::SUPPORTED_VERSIONS as $version) {
-            $content = file_get_contents(self::fixtureDir() . "/bom-{$version}.json");
-            self::assertNotFalse($content, "Could not read bom-{$version}.json fixture");
-
-            yield "bom-{$version}.json fixture parses from JSON string" => [$content, false, ''];
-        }
-
         yield 'valid minimal JSON object parses successfully' => [
             '{"bomFormat":"CycloneDX","specVersion":"1.5"}',
             false,
@@ -436,7 +449,6 @@ final class CycloneDxParserTest extends TestCase
             'Valinor mapping failed',
         ];
 
-        // citations are optional and currently not in the fixtures.
         yield 'valid 1.7 structure with citations maps successfully' => [
             [
                 'bomFormat' => 'CycloneDX',
