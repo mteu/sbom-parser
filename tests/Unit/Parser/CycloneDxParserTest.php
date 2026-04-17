@@ -41,6 +41,11 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SbomParseException::class)]
 final class CycloneDxParserTest extends TestCase
 {
+    private static function fixtureDir(): string
+    {
+        return (string) realpath(__DIR__ . '/../../Fixtures/sbom');
+    }
+
     private CycloneDxParser $subject;
     private string $tempOutputDir;
 
@@ -105,29 +110,18 @@ final class CycloneDxParserTest extends TestCase
         $this->runParserTest(fn () => $this->subject->parseFromArray($data), $expectsException, $expectedMessage);
     }
 
-    #[Test]
-    #[DataProvider('validateSbomPathProvider')]
-    public function validateSbomPath(string $filePath, bool $expectsException, string $expectedMessage = ''): void
-    {
-        $this->runParserTest(fn () => $this->subject->parseFromFile($filePath), $expectsException, $expectedMessage);
-    }
-
     public static function validateDataStructureProvider(): \Generator
     {
-        yield 'valid CycloneDX 1.4' => [
-            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.4'],
-            false,
-            '',
-        ];
+        foreach (CycloneDxParser::SUPPORTED_VERSIONS as $version) {
+            yield "valid CycloneDX {$version}" => [
+                ['bomFormat' => 'CycloneDX', 'specVersion' => $version],
+                false,
+                '',
+            ];
+        }
 
         yield 'valid CycloneDX 1.4 with patch level' => [
             ['bomFormat' => 'CycloneDX', 'specVersion' => '1.4.2'],
-            false,
-            '',
-        ];
-
-        yield 'valid CycloneDX 1.5' => [
-            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.5'],
             false,
             '',
         ];
@@ -138,20 +132,8 @@ final class CycloneDxParserTest extends TestCase
             '',
         ];
 
-        yield 'valid CycloneDX 1.6' => [
-            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.6'],
-            false,
-            '',
-        ];
-
         yield 'valid CycloneDX 1.6 with version qualifier' => [
             ['bomFormat' => 'CycloneDX', 'specVersion' => '1.6-rc1'],
-            false,
-            '',
-        ];
-
-        yield 'valid CycloneDX 1.7' => [
-            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.7'],
             false,
             '',
         ];
@@ -199,14 +181,23 @@ final class CycloneDxParserTest extends TestCase
         ];
     }
 
+    #[Test]
+    #[DataProvider('validateSbomPathProvider')]
+    public function validateSbomPath(string $filePath, bool $expectsException, string $expectedMessage = ''): void
+    {
+        $this->runParserTest(fn () => $this->subject->parseFromFile($filePath), $expectsException, $expectedMessage);
+    }
+
     /** @return \Generator<string, array{string, bool, string}> */
     public static function validateSbomPathProvider(): \Generator
     {
-        yield 'valid absolute path with json extension' => [
-            dirname(__DIR__, 2) . '/Fixtures/sbom/bom-1.5.json',
-            false,
-            '',
-        ];
+        foreach (CycloneDxParser::SUPPORTED_VERSIONS as $version) {
+            yield "valid absolute path for bom-{$version}.json" => [
+                self::fixtureDir() . "/bom-{$version}.json",
+                false,
+                '',
+            ];
+        }
 
         yield 'relative path' => [
             'relative/path/file.json',
@@ -262,7 +253,7 @@ final class CycloneDxParserTest extends TestCase
     {
         $filePath = tempnam($this->tempOutputDir, 'parse_json') . '.json';
         file_put_contents($filePath, '{}');
-        chmod($filePath, 0222); // write-only to simulate unreadable
+        chmod($filePath, 0222);
 
         $this->expectException(SbomParseException::class);
         $this->expectExceptionMessage("File not readable: $filePath");
@@ -274,14 +265,12 @@ final class CycloneDxParserTest extends TestCase
     {
         $filePath = tempnam($this->tempOutputDir, 'large_file') . '.json';
 
-        // Create a file larger than MAX_FILE_SIZE (50MB)
-        // We'll create a 52MB file with repeated content
-        $largeContent = str_repeat('a', 1024 * 1024); // 1MB of 'a'
+        $largeContent = str_repeat('a', 1024 * 1024);
         $handle = fopen($filePath, 'w');
         if ($handle === false) {
             self::fail('Could not open file for writing');
         }
-        for ($i = 0; $i < 52; $i++) { // Write 52MB
+        for ($i = 0; $i < 52; $i++) {
             fwrite($handle, $largeContent);
         }
         fclose($handle);
@@ -291,6 +280,28 @@ final class CycloneDxParserTest extends TestCase
         $this->subject->parseFromFile($filePath);
     }
 
+    /** @return \Generator<string, array{string, string}> */
+    public static function parseFromFileFixtureProvider(): \Generator
+    {
+        foreach (CycloneDxParser::SUPPORTED_VERSIONS as $version) {
+            yield "bom-{$version}.json parses successfully" => [
+                self::fixtureDir() . "/bom-{$version}.json",
+                $version,
+            ];
+        }
+    }
+
+    #[Test]
+    #[DataProvider('parseFromFileFixtureProvider')]
+    public function parseFromFileSucceedsForFixture(string $filePath, string $expectedVersion): void
+    {
+        $bom = $this->subject->parseFromFile($filePath);
+
+        self::assertInstanceOf(Bom::class, $bom);
+        self::assertSame('CycloneDX', $bom->bomFormat);
+        self::assertSame($expectedVersion, $bom->specVersion);
+    }
+
     #[Test]
     #[DataProvider('parseFromJsonProvider')]
     public function parseFromJson(string $json, bool $expectsException, string $expectedMessage = ''): void
@@ -298,20 +309,17 @@ final class CycloneDxParserTest extends TestCase
         $this->runParserTest(fn () => $this->subject->parseFromJson($json), $expectsException, $expectedMessage);
     }
 
-    /**
-     * @param array<string, mixed> $data
-     */
-    #[Test]
-    #[DataProvider('parseFromArrayProvider')]
-    public function parseFromArray(array $data, bool $expectsException, string $expectedMessage = ''): void
-    {
-        $this->runParserTest(fn () => $this->subject->parseFromArray($data), $expectsException, $expectedMessage);
-    }
-
     /** @return \Generator<string, array{string, bool, string}> */
     public static function parseFromJsonProvider(): \Generator
     {
-        yield 'valid JSON object parses successfully' => [
+        foreach (CycloneDxParser::SUPPORTED_VERSIONS as $version) {
+            $content = file_get_contents(self::fixtureDir() . "/bom-{$version}.json");
+            self::assertNotFalse($content, "Could not read bom-{$version}.json fixture");
+
+            yield "bom-{$version}.json fixture parses from JSON string" => [$content, false, ''];
+        }
+
+        yield 'valid minimal JSON object parses successfully' => [
             '{"bomFormat":"CycloneDX","specVersion":"1.5"}',
             false,
             '',
@@ -360,6 +368,16 @@ final class CycloneDxParserTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
+    #[Test]
+    #[DataProvider('parseFromArrayProvider')]
+    public function parseFromArray(array $data, bool $expectsException, string $expectedMessage = ''): void
+    {
+        $this->runParserTest(fn () => $this->subject->parseFromArray($data), $expectsException, $expectedMessage);
+    }
+
     /** @return \Generator<string, array{array<string, mixed>, bool, string}> */
     public static function parseFromArrayProvider(): \Generator
     {
@@ -378,9 +396,9 @@ final class CycloneDxParserTest extends TestCase
                 'metadata' => [
                     'timestamp' => '2025-01-01T12:00:00Z',
                     'tools' => [
-                        ['name' => 'test-tool', 'version' => '1.0']
-                    ]
-                ]
+                        ['name' => 'test-tool', 'version' => '1.0'],
+                    ],
+                ],
             ],
             false,
             '',
@@ -402,7 +420,7 @@ final class CycloneDxParserTest extends TestCase
             [
                 'bomFormat' => 'CycloneDX',
                 'specVersion' => '1.5',
-                'metadata' => 'invalid-metadata-string'
+                'metadata' => 'invalid-metadata-string',
             ],
             true,
             'Valinor mapping failed',
@@ -412,10 +430,26 @@ final class CycloneDxParserTest extends TestCase
             [
                 'bomFormat' => 'CycloneDX',
                 'specVersion' => '1.5',
-                'components' => 'not-an-array'
+                'components' => 'not-an-array',
             ],
             true,
             'Valinor mapping failed',
+        ];
+
+        // citations are optional and currently not in the fixtures.
+        yield 'valid 1.7 structure with citations maps successfully' => [
+            [
+                'bomFormat' => 'CycloneDX',
+                'specVersion' => '1.7',
+                'citations' => [
+                    [
+                        'attributedTo' => ['comp-ref-1'],
+                        'text' => 'Sourced from internal vulnerability database',
+                    ],
+                ],
+            ],
+            false,
+            '',
         ];
     }
 
@@ -455,20 +489,12 @@ final class CycloneDxParserTest extends TestCase
     /** @return \Generator<string, array{string, bool}> */
     public static function isValidSbomFileProvider(): \Generator
     {
-        yield 'valid file' => [
-            dirname(__DIR__, 2) . '/Fixtures/sbom/bom-1.5.json',
-            true,
-        ];
+        foreach (CycloneDxParser::SUPPORTED_VERSIONS as $version) {
+            yield "valid bom-{$version}.json" => [self::fixtureDir() . "/bom-{$version}.json", true];
+        }
 
-        yield 'non-existent file' => [
-            '/tmp/nonexistent-file-abc123.json',
-            false,
-        ];
-
-        yield 'invalid relative path' => [
-            'relative/path.json',
-            false,
-        ];
+        yield 'non-existent file' => ['/tmp/nonexistent-file-abc123.json', false];
+        yield 'invalid relative path' => ['relative/path.json', false];
     }
 
     #[Test]
