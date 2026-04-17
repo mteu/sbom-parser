@@ -122,7 +122,6 @@ final class CycloneDxParserTest extends TestCase
         $this->runParserTest(fn () => $this->subject->parseFromFile($filePath), $expectsException, $expectedMessage);
     }
 
-    /** @return \Generator<string, array{array<string, mixed>, bool, string}> */
     public static function validateDataStructureProvider(): \Generator
     {
         yield 'valid CycloneDX 1.4' => [
@@ -157,6 +156,18 @@ final class CycloneDxParserTest extends TestCase
 
         yield 'valid CycloneDX 1.6 with version qualifier' => [
             ['bomFormat' => 'CycloneDX', 'specVersion' => '1.6-rc1'],
+            false,
+            '',
+        ];
+
+        yield 'valid CycloneDX 1.7' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.7'],
+            false,
+            '',
+        ];
+
+        yield 'valid CycloneDX 1.7 with patch level' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.7.0'],
             false,
             '',
         ];

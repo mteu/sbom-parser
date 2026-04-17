@@ -255,7 +255,10 @@ final readonly class CycloneDxParser implements Parser
             throw SbomParseException::validationFailed('Field specVersion must be a string');
         }
 
-        if (!str_starts_with($specVersion, '1.6') && !str_starts_with($specVersion, '1.5') && !str_starts_with($specVersion, '1.4')) {
+        $supportedVersions = ['1.4', '1.5', '1.6', '1.7'];
+        $supported = array_any($supportedVersions, fn ($v) => str_starts_with($specVersion, $v));
+
+        if (!$supported) {
             throw SbomParseException::unsupportedVersion($specVersion);
         }
     }
