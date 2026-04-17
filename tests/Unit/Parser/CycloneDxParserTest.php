@@ -95,16 +95,6 @@ final class CycloneDxParserTest extends TestCase
         }
     }
 
-
-    #[Test]
-    public function validatingSbomFileSucceedsForAProperFile(): void
-    {
-        self::assertTrue(
-            $this->subject->isValidSbomFile(dirname(__DIR__, 2) . '/Fixtures/sbom/bom-1.5.json')
-        );
-    }
-
-
     /**
      * @param array<string, mixed> $data
      */
@@ -258,6 +248,12 @@ final class CycloneDxParserTest extends TestCase
             dirname(__DIR__, 2) . '/Fixtures/sbom/nonexistent.json',
             true,
             'File not found',
+        ];
+
+        yield 'non-existent directory' => [
+            '/nonexistent_dir_abc123/file.json',
+            true,
+            'SBOM directory does not exist or is not accessible',
         ];
     }
 
@@ -447,5 +443,69 @@ final class CycloneDxParserTest extends TestCase
         yield 'array with keys' => [['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4], 'array[4] with keys: a, b, c, ...'];
         yield 'object' => [new \stdClass(), 'object(stdClass)'];
         yield 'resource' => [tmpfile(), 'unknown'];
+    }
+
+    #[Test]
+    #[DataProvider('isValidSbomFileProvider')]
+    public function isValidSbomFile(string $filePath, bool $expected): void
+    {
+        self::assertSame($expected, $this->subject->isValidSbomFile($filePath));
+    }
+
+    /** @return \Generator<string, array{string, bool}> */
+    public static function isValidSbomFileProvider(): \Generator
+    {
+        yield 'valid file' => [
+            dirname(__DIR__, 2) . '/Fixtures/sbom/bom-1.5.json',
+            true,
+        ];
+
+        yield 'non-existent file' => [
+            '/tmp/nonexistent-file-abc123.json',
+            false,
+        ];
+
+        yield 'invalid relative path' => [
+            'relative/path.json',
+            false,
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('isValidSbomJsonProvider')]
+    public function isValidSbomJson(string $json, bool $expected): void
+    {
+        self::assertSame($expected, $this->subject->isValidSbomJson($json));
+    }
+
+    /** @return \Generator<string, array{string, bool}> */
+    public static function isValidSbomJsonProvider(): \Generator
+    {
+        yield 'non-array JSON' => ['"just a string"', false];
+        yield 'malformed JSON' => ['{broken json', false];
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    #[Test]
+    #[DataProvider('isValidSbomArrayProvider')]
+    public function isValidSbomArray(array $data, bool $expected): void
+    {
+        self::assertSame($expected, $this->subject->isValidSbomArray($data));
+    }
+
+    /** @return \Generator<string, array{array<string, mixed>, bool}> */
+    public static function isValidSbomArrayProvider(): \Generator
+    {
+        yield 'valid structure' => [
+            ['bomFormat' => 'CycloneDX', 'specVersion' => '1.5'],
+            true,
+        ];
+
+        yield 'invalid format' => [
+            ['bomFormat' => 'SPDX', 'specVersion' => '1.5'],
+            false,
+        ];
     }
 }
