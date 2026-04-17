@@ -53,6 +53,13 @@
         ],
         "cgl": "@composer -d tests/CGL --",
         "fix": "@cgl fix",
+        "generate-sboms": [
+            "@composer CycloneDX:make-sbom --output-format=JSON --output-file=tests/Fixtures/sbom/bom-1.4.json --spec-version=1.4",
+            "@composer CycloneDX:make-sbom --output-format=JSON --output-file=tests/Fixtures/sbom/bom-1.5.json --spec-version=1.5",
+            "@composer CycloneDX:make-sbom --output-format=JSON --output-file=tests/Fixtures/sbom/bom-1.6.json --spec-version=1.6",
+            "@composer CycloneDX:make-sbom --output-format=JSON --output-file=tests/Fixtures/sbom/bom-1.7.json --spec-version=1.7",
+            "@test:integration"
+        ],
         "lint": "@cgl lint",
         "sca": "@cgl sca",
         "test": [
