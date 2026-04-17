@@ -5,19 +5,19 @@
     colors="true"
 >
     <testsuites>
-        <testsuite name="Functional tests">
-            <directory>tests/Functional</directory>
+        <testsuite name="Integration tests">
+            <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>
     <coverage>
         <report>
-            <php outputFile=".build/coverage/php/functional.cov"/>
-            <html outputDirectory=".build/coverage/html/functional/"/>
+            <php outputFile=".build/coverage/php/integration.cov"/>
+            <html outputDirectory=".build/coverage/html/integration/"/>
             <text outputFile="php://stdout" showUncoveredFiles="true"/>
         </report>
     </coverage>
     <logging>
-        <junit outputFile=".build/coverage/junit/functional.xml"/>
+        <junit outputFile=".build/coverage/junit/integration.xml"/>
     </logging>
     <source>
         <include>
