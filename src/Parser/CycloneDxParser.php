@@ -112,6 +112,7 @@ final readonly class CycloneDxParser implements Parser
     public function parseFromArray(array $data): Bom
     {
         $this->validateDataStructure($data);
+        $data = $this->normalizeHyphenatedKeys($data);
 
         try {
             return $this->mapper->map(Bom::class, $data);
@@ -121,6 +122,27 @@ final readonly class CycloneDxParser implements Parser
                 $e,
             );
         }
+    }
+
+    /**
+     * @param mixed[] $data
+     * @return array<string, mixed>
+     */
+    private function normalizeHyphenatedKeys(array $data): array
+    {
+        $keyMap = [
+            'bom-ref' => 'bomRef',
+        ];
+
+        $result = [];
+        foreach ($data as $key => $value) {
+            $normalizedKey = $keyMap[(string) $key] ?? (string) $key;
+            $result[$normalizedKey] = is_array($value)
+                ? $this->normalizeHyphenatedKeys($value)
+                : $value;
+        }
+
+        return $result;
     }
 
     /** @codeCoverageIgnore */
@@ -256,7 +278,7 @@ final readonly class CycloneDxParser implements Parser
         }
 
         $supportedVersions = ['1.4', '1.5', '1.6', '1.7'];
-        $supported = array_any($supportedVersions, fn ($v) => str_starts_with($specVersion, $v));
+        $supported = array_any($supportedVersions, fn (string $v) => str_starts_with($specVersion, $v));
 
         if (!$supported) {
             throw SbomParseException::unsupportedVersion($specVersion);

@@ -41,6 +41,8 @@ final readonly class Bom
         public ?Metadata $metadata = null,
         /** @var Component[]|null */
         public ?array $components = null,
+        /** @var Citation[]|null */
+        public ?array $citations = null,
         /** @var Service[]|null */
         public ?array $services = null,
         /** @var ExternalReference[]|null */
@@ -56,9 +58,6 @@ final readonly class Bom
         public ?Signature $signature = null,
     ) {
     }
-
-
-
 
     public function hasComponents(): bool
     {
