@@ -63,6 +63,7 @@ final readonly class Component
         public ?array $components = null,
         /** @var PatentAssertion[]|null */
         public ?array $patentAssertions = null,
+        public ?CryptoProperties $cryptoProperties = null,
     ) {
     }
 

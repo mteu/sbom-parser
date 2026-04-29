@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of the package "mteu/sbom-parser".
  *
- * Copyright (C) 2025 Martin Adler <mteu@mailbox.org>
+ * Copyright (C) 2026 Martin Adler <mteu@mailbox.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,24 +24,20 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Entity;
 
 /**
- * ComponentType enum based on CycloneDX 1.4+ specification.
+ * CryptoMode enum based on CycloneDX 1.7 specification (algorithm mode of operation).
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  */
-enum ComponentType: string
+enum CryptoMode: string
 {
-    case APPLICATION = 'application';
-    case CONTAINER = 'container';
-    case DATA = 'data';
-    case DEVICE = 'device';
-    case DEVICE_DRIVER = 'device-driver';
-    case FIRMWARE = 'firmware';
-    case FILE = 'file';
-    case FRAMEWORK = 'framework';
-    case LIBRARY = 'library';
-    case MACHINE_LEARNING_MODEL = 'machine-learning-model';
-    case OPERATING_SYSTEM = 'operating-system';
-    case PLATFORM = 'platform';
-    case CRYPTOGRAPHIC_ASSET = 'cryptographic-asset';
+    case CBC = 'cbc';
+    case ECB = 'ecb';
+    case CCM = 'ccm';
+    case GCM = 'gcm';
+    case CFB = 'cfb';
+    case OFB = 'ofb';
+    case CTR = 'ctr';
+    case OTHER = 'other';
+    case UNKNOWN = 'unknown';
 }

@@ -463,6 +463,101 @@ final class CycloneDxParserTest extends TestCase
             false,
             '',
         ];
+
+        yield 'valid 1.7 structure with patentAssertions and cryptoProperties maps successfully' => [
+            [
+                'bomFormat' => 'CycloneDX',
+                'specVersion' => '1.7',
+                'components' => [
+                    [
+                        'type' => 'cryptographic-asset',
+                        'name' => 'AES-128-GCM',
+                        'bom-ref' => 'crypto-asset-1',
+                        'patentAssertions' => [
+                            [
+                                'bom-ref' => 'patent-assertion-1',
+                                'assertionType' => 'ownership',
+                                'asserter' => 'org-1',
+                                'patentRefs' => ['patent-1'],
+                                'notes' => 'Held until 2030.',
+                            ],
+                        ],
+                        'cryptoProperties' => [
+                            'assetType' => 'algorithm',
+                            'algorithmProperties' => [
+                                'primitive' => 'ae',
+                                'parameterSetIdentifier' => '128',
+                                'mode' => 'gcm',
+                                'cryptoFunctions' => ['encrypt', 'decrypt', 'tag'],
+                                'classicalSecurityLevel' => 128,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            false,
+            '',
+        ];
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesPatentAssertionAndAlgorithmProperties(): void
+    {
+        $data = [
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.7',
+            'components' => [
+                [
+                    'type' => 'cryptographic-asset',
+                    'name' => 'AES-128-GCM',
+                    'bom-ref' => 'crypto-asset-1',
+                    'patentAssertions' => [
+                        [
+                            'assertionType' => 'license',
+                            'asserter' => 'org-1',
+                            'patentRefs' => ['patent-1'],
+                        ],
+                    ],
+                    'cryptoProperties' => [
+                        'assetType' => 'algorithm',
+                        'algorithmProperties' => [
+                            'primitive' => 'ae',
+                            'mode' => 'gcm',
+                            'cryptoFunctions' => ['encrypt', 'decrypt'],
+                            'classicalSecurityLevel' => 128,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $bom = $this->subject->parseFromArray($data);
+        $components = $bom->components ?? [];
+
+        self::assertCount(1, $components);
+        $component = $components[0];
+
+        self::assertSame(\mteu\SbomParser\Entity\ComponentType::CRYPTOGRAPHIC_ASSET, $component->type);
+
+        self::assertNotNull($component->patentAssertions);
+        self::assertCount(1, $component->patentAssertions);
+        $assertion = $component->patentAssertions[0];
+        self::assertSame(\mteu\SbomParser\Entity\PatentAssertionType::LICENSE, $assertion->assertionType);
+        self::assertSame('org-1', $assertion->asserter);
+        self::assertSame(['patent-1'], $assertion->patentRefs);
+
+        self::assertNotNull($component->cryptoProperties);
+        self::assertSame(\mteu\SbomParser\Entity\CryptoAssetType::ALGORITHM, $component->cryptoProperties->assetType);
+
+        $algo = $component->cryptoProperties->algorithmProperties;
+        self::assertNotNull($algo);
+        self::assertSame(\mteu\SbomParser\Entity\CryptographicPrimitive::AE, $algo->primitive);
+        self::assertSame(\mteu\SbomParser\Entity\CryptoMode::GCM, $algo->mode);
+        self::assertSame(
+            [\mteu\SbomParser\Entity\CryptoFunction::ENCRYPT, \mteu\SbomParser\Entity\CryptoFunction::DECRYPT],
+            $algo->cryptoFunctions,
+        );
+        self::assertSame(128, $algo->classicalSecurityLevel);
     }
 
     #[Test]
