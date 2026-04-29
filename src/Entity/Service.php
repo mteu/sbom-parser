@@ -56,6 +56,8 @@ final readonly class Service
         public ?array $properties = null,
         /** @var array<string, string|int|bool|array<string, string>>|string|null Digital signature */
         public array|string|null $signature = null,
+        /** @var PatentAssertion[]|null */
+        public ?array $patentAssertions = null,
     ) {
     }
 

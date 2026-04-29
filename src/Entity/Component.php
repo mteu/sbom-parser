@@ -61,10 +61,10 @@ final readonly class Component
         public ?array $properties = null,
         /** @var Component[]|null */
         public ?array $components = null,
+        /** @var PatentAssertion[]|null */
+        public ?array $patentAssertions = null,
     ) {
     }
-
-
 
     public function hasComponents(): bool
     {
