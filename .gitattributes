@@ -8,7 +8,7 @@
 /CODEOWNERS                  export-ignore
 /composer.lock               export-ignore
 /CONTRIBUTING.md             export-ignore
-/phpunit.functional.xml      export-ignore
+/phpunit.integration.xml     export-ignore
 /phpunit.unit.xml            export-ignore
 /renovate.json               export-ignore
 /SECURITY.md                 export-ignore
