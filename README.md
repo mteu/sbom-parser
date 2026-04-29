@@ -14,8 +14,6 @@ CycloneDX SBOM (Software Bill of Materials) parser for PHP 8.3+. Supports
 metadata with full immutable entity design using Valinor for type mapping.
 
 > [!NOTE]
-> Why this package?
->
 > The CycloneDX ecosystem provides an official PHP library
 > ([`cyclonedx/cyclonedx-library`](https://github.com/CycloneDX/cyclonedx-php-library))
 > and a [Composer plugin](https://github.com/CycloneDX/cyclonedx-php-composer) for
@@ -49,8 +47,8 @@ Contributions are very welcome! Please have a look at the [Contribution Guide](C
 workflow of submitting new features or bugfixes.
 
 ## 🔒 Security
-Please refer to our [security policy](SECURITY.md) if you discover a security vulnerability in
-this extension. Be warned, though. I cannot afford bounty. This is private project.
+Please refer to the [security policy](SECURITY.md) if you discover a security vulnerability in
+this extension. Be warned, though. I cannot afford bounty.
 
 ## ⭐ License
 This extension is licensed under the [GPL-3.0-or-later](LICENSE) license.
