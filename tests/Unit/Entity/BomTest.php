@@ -30,6 +30,7 @@ use mteu\SbomParser\Entity\ComponentType;
 use mteu\SbomParser\Entity\Compositions;
 use mteu\SbomParser\Entity\Service;
 use mteu\SbomParser\Entity\Vulnerability\Vulnerability;
+use mteu\SbomParser\Index\BomComponentIndex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -41,6 +42,7 @@ use PHPUnit\Framework\TestCase;
  * @license GPL-3.0-or-later
  */
 #[CoversClass(Bom::class)]
+#[CoversClass(BomComponentIndex::class)]
 final class BomTest extends TestCase
 {
     #[Test]
