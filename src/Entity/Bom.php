@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Entity;
 
 use mteu\SbomParser\Entity\Vulnerability\Vulnerability;
+use mteu\SbomParser\Index\BomComponentIndex;
 
 /**
  * Bom.
@@ -70,55 +71,27 @@ final readonly class Bom
     }
 
     /**
-     * @return Component[]
+     * @return list<Component>
      */
     public function getAllComponents(): array
     {
-        $allComponents = [];
-
-        foreach (($this->components ?? []) as $component) {
-            $allComponents[] = $component;
-            $allComponents = array_merge($allComponents, $this->extractNestedComponents($component));
-        }
-
-        return $allComponents;
+        return BomComponentIndex::flatten($this);
     }
 
     /**
-     * @return Component[]
-     */
-    private function extractNestedComponents(Component $component): array
-    {
-        $nested = [];
-
-        foreach (($component->components ?? []) as $childComponent) {
-            $nested[] = $childComponent;
-            $nested = array_merge($nested, $this->extractNestedComponents($childComponent));
-        }
-
-        return $nested;
-    }
-
-    /**
-     * @return Component[]
+     * @return list<Component>
      */
     public function findComponentsByType(ComponentType $type): array
     {
-        return array_filter(
+        return array_values(array_filter(
             $this->getAllComponents(),
             static fn (Component $component): bool => $component->type === $type
-        );
+        ));
     }
 
     public function findComponentByPurl(string $purl): ?Component
     {
-        foreach ($this->getAllComponents() as $component) {
-            if ($component->purl === $purl) {
-                return $component;
-            }
-        }
-
-        return null;
+        return BomComponentIndex::byPurl($this)[$purl] ?? null;
     }
 
 
