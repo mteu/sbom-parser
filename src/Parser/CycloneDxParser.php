@@ -46,13 +46,28 @@ use mteu\SbomParser\Exception\SbomParseException;
 final readonly class CycloneDxParser implements Parser
 {
     public const array SUPPORTED_VERSIONS = ['1.4', '1.5', '1.6', '1.7'];
-    private const int MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+    /**
+     * Default maximum size in bytes of an SBOM file passed to
+     * {@see parseFromFile()}.
+     * Please override via the constructor when working with legitimately large SBOMs.
+     */
+    public const int DEFAULT_MAX_FILE_SIZE = 10 * 1024 * 1024;
+
     private const int JSON_MAX_DEPTH = 64;
 
     private TreeMapper $mapper;
+    private int $maxFileSize;
 
-    public function __construct()
+    public function __construct(int $maxFileSize = self::DEFAULT_MAX_FILE_SIZE)
     {
+        if ($maxFileSize <= 0) {
+            throw new \InvalidArgumentException(
+                sprintf('maxFileSize must be a positive integer, got %d', $maxFileSize)
+            );
+        }
+
+        $this->maxFileSize = $maxFileSize;
         $this->mapper = (new MapperBuilder())
             ->supportDateFormats('Y-m-d\TH:i:s.u\Z', 'Y-m-d\TH:i:s\Z', \DateTimeImmutable::ATOM)
             ->allowSuperfluousKeys()
@@ -63,48 +78,16 @@ final readonly class CycloneDxParser implements Parser
     {
         $this->validateSbomPath($filePath);
 
+        $content = $this->readFile($filePath);
+        $data = $this->decodeJson($content);
+        unset($content);
 
-        if (!file_exists($filePath)) {
-            throw SbomParseException::validationFailed(sprintf('File not found: %s', $filePath));
-        }
-
-        if (!is_readable($filePath)) {
-            throw SbomParseException::validationFailed(sprintf('File not readable: %s', $filePath));
-        }
-
-        $fileSize = filesize($filePath);
-        if ($fileSize === false) {
-            throw SbomParseException::validationFailed(sprintf('Could not determine file size: %s', $filePath));
-        }
-
-        if ($fileSize > self::MAX_FILE_SIZE) {
-            throw SbomParseException::validationFailed(
-                sprintf('File too large: %d bytes (maximum: %d bytes)', $fileSize, self::MAX_FILE_SIZE)
-            );
-        }
-
-        $content = file_get_contents($filePath);
-        if ($content === false) {
-            throw SbomParseException::validationFailed(sprintf('Could not read file: %s', $filePath));
-        }
-
-        return $this->parseFromJson($content);
+        return $this->parseFromArray($data);
     }
 
     public function parseFromJson(string $json): Bom
     {
-        try {
-            $data = json_decode($json, true, self::JSON_MAX_DEPTH, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            throw SbomParseException::invalidJson($e->getMessage(), $e);
-        }
-
-        if (!is_array($data)) {
-            throw SbomParseException::validationFailed('Decoded JSON is not an array');
-        }
-
-        /** @var array<string, mixed> $data */
-        return $this->parseFromArray($data);
+        return $this->parseFromArray($this->decodeJson($json));
     }
 
     /**
@@ -156,20 +139,64 @@ final readonly class CycloneDxParser implements Parser
     {
         try {
             $this->validateSbomPath($filePath);
-
-            if (!file_exists($filePath) || !is_readable($filePath)) {
-                return false;
-            }
-
-            $content = file_get_contents($filePath);
-            if ($content === false) {
-                return false;
-            }
+            $content = $this->readFile($filePath);
 
             return $this->isValidSbomJson($content);
         } catch (SbomParseException) {
             return false;
         }
+    }
+
+    /**
+     * @throws SbomParseException
+     */
+    private function readFile(string $filePath): string
+    {
+        if (!file_exists($filePath)) {
+            throw SbomParseException::validationFailed(sprintf('File not found: %s', $filePath));
+        }
+
+        if (!is_readable($filePath)) {
+            throw SbomParseException::validationFailed(sprintf('File not readable: %s', $filePath));
+        }
+
+        $fileSize = filesize($filePath);
+        if ($fileSize === false) {
+            throw SbomParseException::validationFailed(sprintf('Could not determine file size: %s', $filePath));
+        }
+
+        if ($fileSize > $this->maxFileSize) {
+            throw SbomParseException::validationFailed(
+                sprintf('File too large: %d bytes (maximum: %d bytes)', $fileSize, $this->maxFileSize)
+            );
+        }
+
+        $content = file_get_contents($filePath);
+        if ($content === false) {
+            throw SbomParseException::validationFailed(sprintf('Could not read file: %s', $filePath));
+        }
+
+        return $content;
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws SbomParseException
+     */
+    private function decodeJson(string $json): array
+    {
+        try {
+            $data = json_decode($json, true, self::JSON_MAX_DEPTH, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw SbomParseException::invalidJson($e->getMessage(), $e);
+        }
+
+        if (!is_array($data)) {
+            throw SbomParseException::validationFailed('Decoded JSON is not an array');
+        }
+
+        /** @var array<string, mixed> $data */
+        return $data;
     }
 
     public function isValidSbomJson(string $json): bool
