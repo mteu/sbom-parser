@@ -333,4 +333,49 @@ final class BomTest extends TestCase
 
         self::assertSame($nestedComponent, $result);
     }
+
+    #[Test]
+    public function getAllComponentsReturnsConsistentResultsAcrossCalls(): void
+    {
+        $component = new Component(ComponentType::LIBRARY, 'lib1');
+        $nested = new Component(ComponentType::LIBRARY, 'nested');
+        $parent = new Component(ComponentType::APPLICATION, 'app', components: [$nested]);
+        $bom = new Bom('CycloneDX', '1.6', components: [$component, $parent]);
+
+        $first = $bom->getAllComponents();
+        $second = $bom->getAllComponents();
+
+        self::assertSame([$component, $parent, $nested], $first);
+        self::assertSame($first, $second);
+    }
+
+    #[Test]
+    public function findComponentByPurlReturnsConsistentResultsAcrossCalls(): void
+    {
+        $a = new Component(ComponentType::LIBRARY, 'a', purl: 'pkg:npm/a@1.0.0');
+        $b = new Component(ComponentType::LIBRARY, 'b', purl: 'pkg:npm/b@1.0.0');
+        $bom = new Bom('CycloneDX', '1.6', components: [$a, $b]);
+
+        self::assertSame($a, $bom->findComponentByPurl('pkg:npm/a@1.0.0'));
+        self::assertSame($b, $bom->findComponentByPurl('pkg:npm/b@1.0.0'));
+        self::assertSame($a, $bom->findComponentByPurl('pkg:npm/a@1.0.0'));
+        self::assertNull($bom->findComponentByPurl('pkg:npm/missing@1.0.0'));
+    }
+
+    #[Test]
+    public function getAllComponentsHandlesDeeplyNestedTreesInOrder(): void
+    {
+        $depth = 200;
+        $current = new Component(ComponentType::LIBRARY, "lib-{$depth}");
+        $expected = [$current];
+        for ($i = $depth - 1; $i >= 1; $i--) {
+            $current = new Component(ComponentType::LIBRARY, "lib-{$i}", components: [$current]);
+            array_unshift($expected, $current);
+        }
+
+        $bom = new Bom('CycloneDX', '1.6', components: [$current]);
+
+        self::assertCount($depth, $bom->getAllComponents());
+        self::assertSame($expected, $bom->getAllComponents());
+    }
 }
