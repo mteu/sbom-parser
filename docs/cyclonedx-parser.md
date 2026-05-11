@@ -2,6 +2,9 @@
 
 Type-safe parser for CycloneDX 1.4+ Software Bill of Materials files with comprehensive validation and modern PHP architecture.
 
+> **Note:** Only the **JSON** form of the CycloneDX specification is
+> supported. The XML form is out of scope for this package.
+
 ## Quick Start
 
 ```php
@@ -28,7 +31,7 @@ SBOM parser implementing the `Parser` interface with comprehensive validation:
 
 - `parseFromFile(string $filePath): Bom` - Parse from absolute file path with security validation
 - `parseFromJson(string $json): Bom` - Parse from JSON string with type validation
-- `parseFromArray(array $data): Bom` - Parse from decoded array with schema validation
+- `parseFromArray(array $data): Bom` - Parse from decoded array with schema validation (the same `bomFormat` / `specVersion` / Valinor mapping checks as the JSON paths still apply)
 - `isValidSbomFile(string $filePath): bool` - Validate file without full parsing
 - `isValidSbomJson(string $json): bool` - Validate JSON without full parsing
 - `isValidSbomArray(array $data): bool` - Validate array without full parsing
