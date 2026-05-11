@@ -25,23 +25,28 @@ namespace mteu\SbomParser\Exception;
 
 final class SbomParseException extends \Exception
 {
+    public const int CODE_INVALID_JSON = 1778272290;
+    public const int CODE_VALIDATION_FAILED = 1778272291;
+    public const int CODE_UNSUPPORTED_FORMAT = 1778272292;
+    public const int CODE_UNSUPPORTED_VERSION = 1778272293;
+
     public static function invalidJson(string $message, ?\Throwable $previous = null): self
     {
-        return new self(sprintf('Invalid JSON: %s', $message), 0, $previous);
+        return new self(sprintf('Invalid JSON: %s', $message), self::CODE_INVALID_JSON, $previous);
     }
 
     public static function validationFailed(string $message, ?\Throwable $previous = null): self
     {
-        return new self(sprintf('SBOM validation failed: %s', $message), 0, $previous);
+        return new self(sprintf('SBOM validation failed: %s', $message), self::CODE_VALIDATION_FAILED, $previous);
     }
 
     public static function unsupportedFormat(string $format): self
     {
-        return new self(sprintf('Unsupported SBOM format: %s', $format));
+        return new self(sprintf('Unsupported SBOM format: %s', $format), self::CODE_UNSUPPORTED_FORMAT);
     }
 
     public static function unsupportedVersion(string $version): self
     {
-        return new self(sprintf('Unsupported SBOM version: %s', $version));
+        return new self(sprintf('Unsupported SBOM version: %s', $version), self::CODE_UNSUPPORTED_VERSION);
     }
 }
