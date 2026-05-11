@@ -208,15 +208,11 @@ final readonly class CycloneDxParser implements Parser
      */
     private function validateSbomPath(string $sbomFilePath): void
     {
-        // Ensure absolute path
-        if (!str_starts_with($sbomFilePath, '/')) {
+        if (!$this->isAbsolutePath($sbomFilePath)) {
             throw SbomParseException::validationFailed('SBOM file path must be absolute');
         }
 
-        // Check for directory traversal attempts using multiple methods
-        if (str_contains($sbomFilePath, '..') ||
-            str_contains($sbomFilePath, '%2e%2e') ||
-            str_contains($sbomFilePath, '%2E%2E')) {
+        if ($this->containsTraversalSegment($sbomFilePath)) {
             throw SbomParseException::validationFailed('Directory traversal not allowed in SBOM path');
         }
 
@@ -226,11 +222,9 @@ final readonly class CycloneDxParser implements Parser
             throw SbomParseException::validationFailed('SBOM directory does not exist or is not accessible');
         }
 
-        // Construct the expected file path and verify it matches the real path
         $fileName = basename($sbomFilePath);
-        $expectedRealPath = $realDirectory . '/' . $fileName;
+        $expectedRealPath = $realDirectory . DIRECTORY_SEPARATOR . $fileName;
 
-        // If the file exists, verify the real path matches the expected path
         if (file_exists($sbomFilePath)) {
             $realFilePath = realpath($sbomFilePath);
             if ($realFilePath === false || $realFilePath !== $expectedRealPath) {
@@ -238,7 +232,6 @@ final readonly class CycloneDxParser implements Parser
             }
         }
 
-        // Ensure reasonable file extension
         $allowedExtensions = ['.json'];
         $dotPosition = strrpos($sbomFilePath, '.');
         if ($dotPosition === false) {
@@ -248,6 +241,50 @@ final readonly class CycloneDxParser implements Parser
         if (!in_array($extension, $allowedExtensions, true)) {
             throw SbomParseException::validationFailed('SBOM file must have .json extension');
         }
+    }
+
+    /**
+     * Detects absolute paths in a cross-platform way: Unix (`/foo`),
+     * Windows drive (`C:\foo`, `C:/foo`), and UNC (`\\server\share`).
+     */
+    private function isAbsolutePath(string $path): bool
+    {
+        if ($path === '') {
+            return false;
+        }
+
+        if ($path[0] === '/') {
+            return true;
+        }
+
+        if (str_starts_with($path, '\\\\')) {
+            return true;
+        }
+
+        return preg_match('#^[A-Za-z]:[\\\\/]#', $path) === 1;
+    }
+
+    /**
+     * Detects traversal at the path-segment level so legitimate names
+     * like `foo..bar.json` or `data..backup/` are not falsely rejected.
+     */
+    private function containsTraversalSegment(string $path): bool
+    {
+        // Normalise URL-encoded dots so the segment check sees them too.
+        $normalized = preg_replace('/%2e/i', '.', $path) ?? $path;
+
+        $segments = preg_split('#[\\\\/]+#', $normalized);
+        if ($segments === false) {
+            return false;
+        }
+
+        foreach ($segments as $segment) {
+            if ($segment === '..') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

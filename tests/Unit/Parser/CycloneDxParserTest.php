@@ -250,6 +250,119 @@ final class CycloneDxParserTest extends TestCase
     }
 
     #[Test]
+    public function parseFromFileAcceptsDoubleDotInsideFilename(): void
+    {
+        $filePath = $this->tempOutputDir . '/foo..bar.json';
+        file_put_contents($filePath, '{"bomFormat":"CycloneDX","specVersion":"1.5"}');
+
+        $bom = $this->subject->parseFromFile($filePath);
+
+        self::assertSame('CycloneDX', $bom->bomFormat);
+        self::assertSame('1.5', $bom->specVersion);
+    }
+
+    #[Test]
+    public function parseFromFileAcceptsDoubleDotInsideDirectoryName(): void
+    {
+        $directory = $this->tempOutputDir . '/data..backup';
+        mkdir($directory);
+        $filePath = $directory . '/sbom.json';
+        file_put_contents($filePath, '{"bomFormat":"CycloneDX","specVersion":"1.5"}');
+
+        $bom = $this->subject->parseFromFile($filePath);
+
+        self::assertSame('CycloneDX', $bom->bomFormat);
+    }
+
+    #[Test]
+    public function parseFromFileRejectsSymlinkPointingOutsideDirectory(): void
+    {
+        if (!function_exists('symlink')) {
+            self::markTestSkipped('symlink() not available on this platform');
+        }
+
+        $target = tempnam(sys_get_temp_dir(), 'sbom_symlink_target_');
+        self::assertNotFalse($target);
+        file_put_contents($target, '{"bomFormat":"CycloneDX","specVersion":"1.5"}');
+
+        $symlinkPath = $this->tempOutputDir . '/sbom.json';
+
+        set_error_handler(static fn () => true);
+        try {
+            $created = symlink($target, $symlinkPath);
+        } finally {
+            restore_error_handler();
+        }
+
+        if (!$created) {
+            unlink($target);
+            self::markTestSkipped('Could not create symlink (insufficient permissions)');
+        }
+
+        try {
+            $this->expectException(SbomParseException::class);
+            $this->expectExceptionMessage('Directory traversal not allowed in SBOM path');
+            $this->subject->parseFromFile($symlinkPath);
+        } finally {
+            if (is_link($symlinkPath) || file_exists($symlinkPath)) {
+                unlink($symlinkPath);
+            }
+            if (file_exists($target)) {
+                unlink($target);
+            }
+        }
+    }
+
+    #[Test]
+    #[DataProvider('isAbsolutePathProvider')]
+    public function isAbsolutePathRecognisesPlatformConventions(string $path, bool $expected): void
+    {
+        $reflection = new \ReflectionMethod(CycloneDxParser::class, 'isAbsolutePath');
+        self::assertSame($expected, $reflection->invoke($this->subject, $path));
+    }
+
+    /** @return \Generator<string, array{string, bool}> */
+    public static function isAbsolutePathProvider(): \Generator
+    {
+        yield 'unix absolute' => ['/tmp/sbom.json', true];
+        yield 'unix relative' => ['tmp/sbom.json', false];
+        yield 'empty string' => ['', false];
+        yield 'plain dot' => ['./sbom.json', false];
+
+        yield 'windows drive with backslash' => ['C:\\Users\\foo\\sbom.json', true];
+        yield 'windows drive with forward slash' => ['C:/Users/foo/sbom.json', true];
+        yield 'windows drive lowercase letter' => ['d:\\sbom.json', true];
+        yield 'windows drive without separator' => ['C:sbom.json', false];
+        yield 'colon-only is not absolute' => [':sbom', false];
+
+        yield 'unc path' => ['\\\\server\\share\\sbom.json', true];
+    }
+
+    #[Test]
+    #[DataProvider('containsTraversalSegmentProvider')]
+    public function containsTraversalSegmentDetectsOnlyRealTraversal(string $path, bool $expected): void
+    {
+        $reflection = new \ReflectionMethod(CycloneDxParser::class, 'containsTraversalSegment');
+        self::assertSame($expected, $reflection->invoke($this->subject, $path));
+    }
+
+    /** @return \Generator<string, array{string, bool}> */
+    public static function containsTraversalSegmentProvider(): \Generator
+    {
+        yield 'clean unix path' => ['/var/data/sbom.json', false];
+        yield 'literal traversal segment' => ['/tmp/../etc/sbom.json', true];
+        yield 'trailing traversal segment' => ['/var/data/..', true];
+        yield 'url-encoded lowercase' => ['/tmp/%2e%2e/etc/sbom.json', true];
+        yield 'url-encoded uppercase' => ['/tmp/%2E%2E/etc/sbom.json', true];
+        yield 'url-encoded mixed case' => ['/tmp/%2e%2E/etc/sbom.json', true];
+        yield 'double-dot inside filename is allowed' => ['/var/data/foo..bar.json', false];
+        yield 'double-dot inside directory is allowed' => ['/var/data..backup/sbom.json', false];
+        yield 'leading double-dot inside segment is allowed' => ['/var/..hidden/sbom.json', false];
+        yield 'trailing double-dot inside segment is allowed' => ['/var/hidden../sbom.json', false];
+        yield 'windows-style traversal segment' => ['C:\\Users\\..\\etc\\sbom.json', true];
+    }
+
+    #[Test]
     public function parseFromFileThrowsExceptionForUnreadableFile(): void
     {
         $filePath = tempnam($this->tempOutputDir, 'parse_json') . '.json';
