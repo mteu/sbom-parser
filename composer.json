@@ -1,6 +1,6 @@
 {
     "name": "mteu/sbom-parser",
-    "description": "",
+    "description": "Type-safe parser for CycloneDX Software Bill of Materials (SBOM) JSON files",
     "license": "GPL-3.0-or-later",
     "type": "package",
     "authors": [

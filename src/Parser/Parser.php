@@ -55,7 +55,13 @@ interface Parser
     public function parseFromJson(string $json): Bom;
 
     /**
-     * Parse SBOM from decoded array structure
+     * Parse SBOM from decoded array structure.
+     *
+     * The same structural validation that is applied to the JSON and file
+     * paths runs here too — callers do not need to (and cannot) bypass it
+     * by going through this entry point. An invalid `bomFormat`,
+     * unsupported `specVersion`, or any field whose type Valinor cannot
+     * map will raise `SbomParseException`.
      *
      * @param array<string, mixed> $data Pre-decoded CycloneDX data structure
      * @return Bom Fully parsed and validated SBOM object
@@ -64,7 +70,11 @@ interface Parser
     public function parseFromArray(array $data): Bom;
 
     /**
-     * Get supported file formats
+     * Get supported file formats.
+     *
+     * Implementations of this interface only consume CycloneDX **JSON**
+     * documents; the XML form of the CycloneDX specification is out of
+     * scope for this package.
      *
      * @return list<string> Currently supported formats
      */
