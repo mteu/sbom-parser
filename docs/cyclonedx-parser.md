@@ -29,8 +29,7 @@ $bom = $parser->parseFromArray($data);
 ### Parser Class: [`CycloneDxParser`](../src/Parser/CycloneDxParser.php)
 SBOM parser implementing the `Parser` interface with comprehensive validation:
 
-- `parseFromFile(string $filePath): Bom` - Parse from absolute file path with security validation
-- `parseFromJson(string $json): Bom` - Parse from JSON string with type validation
+- `parseFromFile(string $filePath): Bom` - Parse from absolute file path with security validation.
 - `parseFromArray(array $data): Bom` - Parse from decoded array with schema validation (the same `bomFormat` / `specVersion` / Valinor mapping checks as the JSON paths still apply)
 - `isValidSbomFile(string $filePath): bool` - Validate file without full parsing
 - `isValidSbomJson(string $json): bool` - Validate JSON without full parsing
@@ -55,7 +54,7 @@ $services = $bom->services ?? [];
 
 // Find specific components
 $libraries = $bom->findComponentsByType(ComponentType::LIBRARY);
-$component = $bom->findComponentByPurl('pkg:npm/lodash@4.17.21');
+$component = $bom->findComponentByPurl('pkg:composer/symfony/console@7.1.0');
 ```
 
 ### Component Entity: [`Component`](../src/Entity/Component.php)
@@ -90,6 +89,14 @@ if ($parser->isValidSbomJson($jsonString)) {
 if ($parser->isValidSbomArray($decodedData)) {
     $bom = $parser->parseFromArray($decodedData);
 }
+```
+
+## File Size Limit
+
+`parseFromFile` and `isValidSbomFile` enforce a default cap of 10 MiB (`CycloneDxParser::DEFAULT_MAX_FILE_SIZE`). Pass a custom limit in bytes to the constructor to raise it:
+
+```php
+$parser = new CycloneDxParser(50 * 1024 * 1024); // 50 MiB
 ```
 
 ## Error Handling
