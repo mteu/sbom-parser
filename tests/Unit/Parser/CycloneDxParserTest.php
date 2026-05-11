@@ -377,21 +377,63 @@ final class CycloneDxParserTest extends TestCase
     #[Test]
     public function parseFromFileThrowsExceptionForFileTooLarge(): void
     {
-        $filePath = tempnam($this->tempOutputDir, 'large_file') . '.json';
+        $maxFileSize = 256;
+        $parser = new CycloneDxParser($maxFileSize);
 
-        $largeContent = str_repeat('a', 1024 * 1024);
-        $handle = fopen($filePath, 'w');
-        if ($handle === false) {
-            self::fail('Could not open file for writing');
-        }
-        for ($i = 0; $i < 52; $i++) {
-            fwrite($handle, $largeContent);
-        }
-        fclose($handle);
+        $filePath = tempnam($this->tempOutputDir, 'large_file') . '.json';
+        file_put_contents($filePath, str_repeat('a', $maxFileSize + 1));
 
         $this->expectException(SbomParseException::class);
         $this->expectExceptionMessage('File too large');
-        $this->subject->parseFromFile($filePath);
+        $parser->parseFromFile($filePath);
+    }
+
+    #[Test]
+    public function parseFromFileAcceptsFileWithinCustomMaxFileSize(): void
+    {
+        $payload = '{"bomFormat":"CycloneDX","specVersion":"1.5"}';
+        $parser = new CycloneDxParser(strlen($payload) + 1);
+
+        $filePath = tempnam($this->tempOutputDir, 'within_cap') . '.json';
+        file_put_contents($filePath, $payload);
+
+        $bom = $parser->parseFromFile($filePath);
+
+        self::assertSame('1.5', $bom->specVersion);
+    }
+
+    #[Test]
+    public function defaultMaxFileSizeMatchesPublicConstant(): void
+    {
+        self::assertSame(10 * 1024 * 1024, CycloneDxParser::DEFAULT_MAX_FILE_SIZE);
+    }
+
+    #[Test]
+    #[DataProvider('invalidMaxFileSizeProvider')]
+    public function constructorRejectsNonPositiveMaxFileSize(int $invalid): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('maxFileSize must be a positive integer');
+        new CycloneDxParser($invalid);
+    }
+
+    /** @return \Generator<string, array{int}> */
+    public static function invalidMaxFileSizeProvider(): \Generator
+    {
+        yield 'zero' => [0];
+        yield 'negative one' => [-1];
+        yield 'large negative' => [-1024 * 1024];
+    }
+
+    #[Test]
+    public function isValidSbomFileReturnsFalseForFileExceedingMaxSize(): void
+    {
+        $parser = new CycloneDxParser(64);
+
+        $filePath = tempnam($this->tempOutputDir, 'over_cap') . '.json';
+        file_put_contents($filePath, str_repeat('a', 256));
+
+        self::assertFalse($parser->isValidSbomFile($filePath));
     }
 
     /** @return \Generator<string, array{string, string}> */
