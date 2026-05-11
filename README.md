@@ -6,7 +6,7 @@
 [![Maintainability](https://qlty.sh/gh/mteu/projects/sbom-parser/maintainability.svg)](https://qlty.sh/gh/mteu/projects/sbom-parser)
 [![PHP Version Require](https://poser.pugx.org/mteu/sbom-parser/require/php)](https://packagist.org/packages/mteu/sbom-parser)
 
-# CycloneDX SBOM Parser
+# CycloneDX SBOM Parser for PHP
 </div>
 
 CycloneDX SBOM (Software Bill of Materials) parser for PHP 8.3+. Supports
