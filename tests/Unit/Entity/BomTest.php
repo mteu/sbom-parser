@@ -289,10 +289,10 @@ final class BomTest extends TestCase
     #[Test]
     public function findComponentByPurlReturnsNullWhenNotFound(): void
     {
-        $component = new Component(ComponentType::LIBRARY, 'lib1', purl: 'pkg:npm/lib1@1.0.0');
+        $component = new Component(ComponentType::LIBRARY, 'symfony/console', purl: 'pkg:composer/symfony/console@7.1.0');
         $bom = new Bom('CycloneDX', '1.6', components: [$component]);
 
-        $result = $bom->findComponentByPurl('pkg:npm/lib2@1.0.0');
+        $result = $bom->findComponentByPurl('pkg:composer/missing/missing@1.0.0');
 
         self::assertNull($result);
     }
@@ -300,10 +300,10 @@ final class BomTest extends TestCase
     #[Test]
     public function findComponentByPurlReturnsNullWhenNoPurl(): void
     {
-        $component = new Component(ComponentType::LIBRARY, 'lib1');
+        $component = new Component(ComponentType::LIBRARY, 'symfony/console');
         $bom = new Bom('CycloneDX', '1.6', components: [$component]);
 
-        $result = $bom->findComponentByPurl('pkg:npm/lib1@1.0.0');
+        $result = $bom->findComponentByPurl('pkg:composer/symfony/console@7.1.0');
 
         self::assertNull($result);
     }
@@ -311,11 +311,11 @@ final class BomTest extends TestCase
     #[Test]
     public function findComponentByPurlReturnsMatchingComponent(): void
     {
-        $component1 = new Component(ComponentType::LIBRARY, 'lib1', purl: 'pkg:npm/lib1@1.0.0');
-        $component2 = new Component(ComponentType::LIBRARY, 'lib2', purl: 'pkg:npm/lib2@2.0.0');
+        $component1 = new Component(ComponentType::LIBRARY, 'symfony/console', purl: 'pkg:composer/symfony/console@7.1.0');
+        $component2 = new Component(ComponentType::LIBRARY, 'cuyz/valinor', purl: 'pkg:composer/cuyz/valinor@2.0.0');
         $bom = new Bom('CycloneDX', '1.6', components: [$component1, $component2]);
 
-        $result = $bom->findComponentByPurl('pkg:npm/lib2@2.0.0');
+        $result = $bom->findComponentByPurl('pkg:composer/cuyz/valinor@2.0.0');
 
         self::assertSame($component2, $result);
     }
@@ -323,7 +323,7 @@ final class BomTest extends TestCase
     #[Test]
     public function findComponentByPurlSearchesNestedComponents(): void
     {
-        $nestedComponent = new Component(ComponentType::LIBRARY, 'nested', purl: 'pkg:npm/nested@1.0.0');
+        $nestedComponent = new Component(ComponentType::LIBRARY, 'phpunit/phpunit', purl: 'pkg:composer/phpunit/phpunit@11.5.0');
         $parentComponent = new Component(
             ComponentType::APPLICATION,
             'parent',
@@ -331,7 +331,7 @@ final class BomTest extends TestCase
         );
         $bom = new Bom('CycloneDX', '1.6', components: [$parentComponent]);
 
-        $result = $bom->findComponentByPurl('pkg:npm/nested@1.0.0');
+        $result = $bom->findComponentByPurl('pkg:composer/phpunit/phpunit@11.5.0');
 
         self::assertSame($nestedComponent, $result);
     }
@@ -354,14 +354,14 @@ final class BomTest extends TestCase
     #[Test]
     public function findComponentByPurlReturnsConsistentResultsAcrossCalls(): void
     {
-        $a = new Component(ComponentType::LIBRARY, 'a', purl: 'pkg:npm/a@1.0.0');
-        $b = new Component(ComponentType::LIBRARY, 'b', purl: 'pkg:npm/b@1.0.0');
+        $a = new Component(ComponentType::LIBRARY, 'symfony/console', purl: 'pkg:composer/symfony/console@7.1.0');
+        $b = new Component(ComponentType::LIBRARY, 'cuyz/valinor', purl: 'pkg:composer/cuyz/valinor@2.0.0');
         $bom = new Bom('CycloneDX', '1.6', components: [$a, $b]);
 
-        self::assertSame($a, $bom->findComponentByPurl('pkg:npm/a@1.0.0'));
-        self::assertSame($b, $bom->findComponentByPurl('pkg:npm/b@1.0.0'));
-        self::assertSame($a, $bom->findComponentByPurl('pkg:npm/a@1.0.0'));
-        self::assertNull($bom->findComponentByPurl('pkg:npm/missing@1.0.0'));
+        self::assertSame($a, $bom->findComponentByPurl('pkg:composer/symfony/console@7.1.0'));
+        self::assertSame($b, $bom->findComponentByPurl('pkg:composer/cuyz/valinor@2.0.0'));
+        self::assertSame($a, $bom->findComponentByPurl('pkg:composer/symfony/console@7.1.0'));
+        self::assertNull($bom->findComponentByPurl('pkg:composer/missing/missing@1.0.0'));
     }
 
     #[Test]
