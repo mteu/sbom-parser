@@ -125,10 +125,81 @@ final class CycloneDxParserOptionsTest extends TestCase
     #[Test]
     public function withMaxNodesPreservesOtherFields(): void
     {
-        $original = new CycloneDxParserOptions(maxFileSize: 1024, maxNodes: 100);
+        $original = new CycloneDxParserOptions(
+            maxFileSize: 1024,
+            maxNodes: 100,
+            allowedBaseDirectories: ['/srv/sboms'],
+        );
         $mutated = $original->withMaxNodes(200);
 
         self::assertSame(1024, $mutated->maxFileSize);
         self::assertSame(200, $mutated->maxNodes);
+        self::assertSame(['/srv/sboms'], $mutated->allowedBaseDirectories);
+    }
+
+    #[Test]
+    public function allowedBaseDirectoriesDefaultsToEmptyList(): void
+    {
+        $options = new CycloneDxParserOptions();
+
+        self::assertSame([], $options->allowedBaseDirectories);
+    }
+
+    #[Test]
+    public function customAllowedBaseDirectoriesAreStored(): void
+    {
+        $directories = ['/srv/sboms', '/var/data/sboms'];
+        $options = new CycloneDxParserOptions(allowedBaseDirectories: $directories);
+
+        self::assertSame($directories, $options->allowedBaseDirectories);
+    }
+
+    #[Test]
+    public function constructorRejectsEmptyAllowedBaseDirectoryEntry(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('allowedBaseDirectories entries must be non-empty strings');
+        new CycloneDxParserOptions(allowedBaseDirectories: ['/srv/sboms', '']);
+    }
+
+    #[Test]
+    public function withAllowedBaseDirectoriesReturnsNewInstance(): void
+    {
+        $original = new CycloneDxParserOptions(allowedBaseDirectories: ['/srv/a']);
+        $mutated = $original->withAllowedBaseDirectories(['/srv/b']);
+
+        self::assertNotSame($original, $mutated);
+        self::assertSame(['/srv/a'], $original->allowedBaseDirectories);
+        self::assertSame(['/srv/b'], $mutated->allowedBaseDirectories);
+    }
+
+    #[Test]
+    public function withAllowedBaseDirectoriesValidatesNewValue(): void
+    {
+        $original = new CycloneDxParserOptions();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('allowedBaseDirectories entries must be non-empty strings');
+        $original->withAllowedBaseDirectories(['']);
+    }
+
+    #[Test]
+    public function withAllowedBaseDirectoriesPreservesOtherFields(): void
+    {
+        $original = new CycloneDxParserOptions(maxFileSize: 1024, maxNodes: 100);
+        $mutated = $original->withAllowedBaseDirectories(['/srv/sboms']);
+
+        self::assertSame(1024, $mutated->maxFileSize);
+        self::assertSame(100, $mutated->maxNodes);
+        self::assertSame(['/srv/sboms'], $mutated->allowedBaseDirectories);
+    }
+
+    #[Test]
+    public function withMaxFileSizePreservesAllowedBaseDirectories(): void
+    {
+        $original = new CycloneDxParserOptions(allowedBaseDirectories: ['/srv/sboms']);
+        $mutated = $original->withMaxFileSize(2048);
+
+        self::assertSame(['/srv/sboms'], $mutated->allowedBaseDirectories);
     }
 }

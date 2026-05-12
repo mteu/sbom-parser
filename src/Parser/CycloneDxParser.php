@@ -255,6 +255,14 @@ final readonly class CycloneDxParser implements Parser
             }
         }
 
+        if ($this->options->allowedBaseDirectories !== []
+            && !$this->isWithinAllowedBaseDirectory($expectedRealPath)
+        ) {
+            throw SbomParseException::validationFailed(
+                'SBOM file path is outside the allowed base directories'
+            );
+        }
+
         $allowedExtensions = ['.json'];
         $dotPosition = strrpos($sbomFilePath, '.');
         if ($dotPosition === false) {
@@ -285,6 +293,29 @@ final readonly class CycloneDxParser implements Parser
         }
 
         return preg_match('#^[A-Za-z]:[\\\\/]#', $path) === 1;
+    }
+
+    /**
+     * Verifies that the resolved SBOM path lives under one of the
+     * configured allowed base directories. Each prefix is normalised
+     * via realpath() so symlinked or relative entries resolve to a
+     * canonical absolute form before the comparison.
+     */
+    private function isWithinAllowedBaseDirectory(string $resolvedFilePath): bool
+    {
+        foreach ($this->options->allowedBaseDirectories as $allowed) {
+            $realAllowed = realpath($allowed);
+            if ($realAllowed === false) {
+                continue;
+            }
+
+            $needle = rtrim($realAllowed, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            if (str_starts_with($resolvedFilePath, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
