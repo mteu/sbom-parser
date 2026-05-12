@@ -54,6 +54,23 @@ final class CycloneDxParserOptionsTest extends TestCase
     }
 
     #[Test]
+    #[DataProvider('invalidMaxNodesProvider')]
+    public function constructorRejectsNonPositiveMaxNodes(int $invalid): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('maxNodes must be a positive integer');
+        new CycloneDxParserOptions(maxNodes: $invalid);
+    }
+
+    /** @return \Generator<string, array{int}> */
+    public static function invalidMaxNodesProvider(): \Generator
+    {
+        yield 'zero' => [0];
+        yield 'negative one' => [-1];
+        yield 'large negative' => [-1_000_000];
+    }
+
+    #[Test]
     public function withMaxFileSizeReturnsNewInstance(): void
     {
         $original = new CycloneDxParserOptions(maxFileSize: 1024);
@@ -72,5 +89,46 @@ final class CycloneDxParserOptionsTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('maxFileSize must be a positive integer');
         $original->withMaxFileSize(0);
+    }
+
+    #[Test]
+    public function withMaxFileSizePreservesOtherFields(): void
+    {
+        $original = new CycloneDxParserOptions(maxFileSize: 1024, maxNodes: 500);
+        $mutated = $original->withMaxFileSize(2048);
+
+        self::assertSame(2048, $mutated->maxFileSize);
+        self::assertSame(500, $mutated->maxNodes);
+    }
+
+    #[Test]
+    public function withMaxNodesReturnsNewInstance(): void
+    {
+        $original = new CycloneDxParserOptions(maxNodes: 100);
+        $mutated = $original->withMaxNodes(200);
+
+        self::assertNotSame($original, $mutated);
+        self::assertSame(100, $original->maxNodes);
+        self::assertSame(200, $mutated->maxNodes);
+    }
+
+    #[Test]
+    public function withMaxNodesValidatesNewValue(): void
+    {
+        $original = new CycloneDxParserOptions();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('maxNodes must be a positive integer');
+        $original->withMaxNodes(0);
+    }
+
+    #[Test]
+    public function withMaxNodesPreservesOtherFields(): void
+    {
+        $original = new CycloneDxParserOptions(maxFileSize: 1024, maxNodes: 100);
+        $mutated = $original->withMaxNodes(200);
+
+        self::assertSame(1024, $mutated->maxFileSize);
+        self::assertSame(200, $mutated->maxNodes);
     }
 }

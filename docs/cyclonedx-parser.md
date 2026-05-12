@@ -105,18 +105,32 @@ To override defaults, build a `CycloneDxParserOptions` and pass it in:
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
 
-$options = new CycloneDxParserOptions(maxFileSize: 50 * 1024 * 1024);
+$options = new CycloneDxParserOptions(
+    maxFileSize: 50 * 1024 * 1024,
+    maxNodes: 5_000_000,
+);
+
 $parser = new CycloneDxParser($options);
 
-// Or use the fluent `with*` mutator:
+// Or use the fluent `with*` mutator or any of these options while preserving the other option(s).
 $parser = new CycloneDxParser(
     (new CycloneDxParserOptions())->withMaxFileSize(50 * 1024 * 1024),
+);
+
+$parser = new CycloneDxParser(
+    (new CycloneDxParserOptions())->withMaxNodes(5_000_000),
 );
 ```
 
 ### File size limit
 
 `parseFromFile` and `isValidSbomFile` enforce a default cap of 10 MiB (`CycloneDxParserOptions::DEFAULT_MAX_FILE_SIZE`). Raise it by configuring `maxFileSize` on the options DTO as shown above.
+
+### Max node limit
+
+`parseFromArray` enforces a default maximum total node count in the decoded SBOM tree of `1_000_000` nodes to parsed (`CycloneDxParserOptions::DEFAULT_MAX_NODES`). Raise it by configuring `maxNodes` on the options DTO as shown above.
+
+
 
 ## Error Handling
 

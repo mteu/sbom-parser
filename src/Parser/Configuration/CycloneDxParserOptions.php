@@ -39,18 +39,38 @@ final readonly class CycloneDxParserOptions
      */
     public const int DEFAULT_MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+    /**
+     * Default maximum total node count in the decoded SBOM tree. Caps
+     * wide payloads that would otherwise pass the file-size limit but
+     * still exhaust memory once decoded. Override via {@see withMaxNodes()}
+     * when working with legitimately very large SBOMs.
+     */
+    public const int DEFAULT_MAX_NODES = 1_000_000;
+
     public function __construct(
         public int $maxFileSize = self::DEFAULT_MAX_FILE_SIZE,
+        public int $maxNodes = self::DEFAULT_MAX_NODES,
     ) {
         if ($maxFileSize <= 0) {
             throw new \InvalidArgumentException(
                 sprintf('maxFileSize must be a positive integer, got %d', $maxFileSize)
             );
         }
+
+        if ($maxNodes <= 0) {
+            throw new \InvalidArgumentException(
+                sprintf('maxNodes must be a positive integer, got %d', $maxNodes)
+            );
+        }
     }
 
     public function withMaxFileSize(int $bytes): self
     {
-        return new self(maxFileSize: $bytes);
+        return new self(maxFileSize: $bytes, maxNodes: $this->maxNodes);
+    }
+
+    public function withMaxNodes(int $count): self
+    {
+        return new self(maxFileSize: $this->maxFileSize, maxNodes: $count);
     }
 }
