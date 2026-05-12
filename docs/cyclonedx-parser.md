@@ -91,13 +91,32 @@ if ($parser->isValidSbomArray($decodedData)) {
 }
 ```
 
-## File Size Limit
+## Configuration
 
-`parseFromFile` and `isValidSbomFile` enforce a default cap of 10 MiB (`CycloneDxParser::DEFAULT_MAX_FILE_SIZE`). Pass a custom limit in bytes to the constructor to raise it:
+`CycloneDxParser` is configured via an immutable `CycloneDxParserOptions` DTO. Default construction needs no arguments:
 
 ```php
-$parser = new CycloneDxParser(50 * 1024 * 1024); // 50 MiB
+$parser = new CycloneDxParser();
 ```
+
+To override defaults, build a `CycloneDxParserOptions` and pass it in:
+
+```php
+use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
+use mteu\SbomParser\Parser\CycloneDxParser;
+
+$options = new CycloneDxParserOptions(maxFileSize: 50 * 1024 * 1024);
+$parser = new CycloneDxParser($options);
+
+// Or use the fluent `with*` mutator:
+$parser = new CycloneDxParser(
+    (new CycloneDxParserOptions())->withMaxFileSize(50 * 1024 * 1024),
+);
+```
+
+### File size limit
+
+`parseFromFile` and `isValidSbomFile` enforce a default cap of 10 MiB (`CycloneDxParserOptions::DEFAULT_MAX_FILE_SIZE`). Raise it by configuring `maxFileSize` on the options DTO as shown above.
 
 ## Error Handling
 
