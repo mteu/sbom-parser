@@ -34,6 +34,7 @@ use mteu\SbomParser\Entity\ComponentType;
 use mteu\SbomParser\Entity\ExternalReferenceType;
 use mteu\SbomParser\Entity\HashAlgorithm;
 use mteu\SbomParser\Exception\SbomParseException;
+use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 
 /**
  * Type-Safe SBOM Parser.
@@ -47,27 +48,13 @@ final readonly class CycloneDxParser implements Parser
 {
     public const array SUPPORTED_VERSIONS = ['1.4', '1.5', '1.6', '1.7'];
 
-    /**
-     * Default maximum size in bytes of an SBOM file passed to
-     * {@see parseFromFile()}.
-     * Please override via the constructor when working with legitimately large SBOMs.
-     */
-    public const int DEFAULT_MAX_FILE_SIZE = 10 * 1024 * 1024;
-
     private const int JSON_MAX_DEPTH = 64;
 
     private TreeMapper $mapper;
-    private int $maxFileSize;
 
-    public function __construct(int $maxFileSize = self::DEFAULT_MAX_FILE_SIZE)
-    {
-        if ($maxFileSize <= 0) {
-            throw new \InvalidArgumentException(
-                sprintf('maxFileSize must be a positive integer, got %d', $maxFileSize)
-            );
-        }
-
-        $this->maxFileSize = $maxFileSize;
+    public function __construct(
+        private CycloneDxParserOptions $options = new CycloneDxParserOptions(),
+    ) {
         $this->mapper = (new MapperBuilder())
             ->supportDateFormats('Y-m-d\TH:i:s.u\Z', 'Y-m-d\TH:i:s\Z', \DateTimeImmutable::ATOM)
             ->allowSuperfluousKeys()
@@ -165,9 +152,9 @@ final readonly class CycloneDxParser implements Parser
             throw SbomParseException::validationFailed(sprintf('Could not determine file size: %s', $filePath));
         }
 
-        if ($fileSize > $this->maxFileSize) {
+        if ($fileSize > $this->options->maxFileSize) {
             throw SbomParseException::validationFailed(
-                sprintf('File too large: %d bytes (maximum: %d bytes)', $fileSize, $this->maxFileSize)
+                sprintf('File too large: %d bytes (maximum: %d bytes)', $fileSize, $this->options->maxFileSize)
             );
         }
 

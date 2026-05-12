@@ -25,6 +25,7 @@ namespace mteu\SbomParser\Tests\Unit\Parser;
 
 use mteu\SbomParser\Entity\Bom;
 use mteu\SbomParser\Exception\SbomParseException;
+use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -38,6 +39,7 @@ use PHPUnit\Framework\TestCase;
  * @license GPL-3.0-or-later
  */
 #[CoversClass(CycloneDxParser::class)]
+#[CoversClass(CycloneDxParserOptions::class)]
 #[CoversClass(SbomParseException::class)]
 final class CycloneDxParserTest extends TestCase
 {
@@ -378,7 +380,7 @@ final class CycloneDxParserTest extends TestCase
     public function parseFromFileThrowsExceptionForFileTooLarge(): void
     {
         $maxFileSize = 256;
-        $parser = new CycloneDxParser($maxFileSize);
+        $parser = new CycloneDxParser(new CycloneDxParserOptions(maxFileSize: $maxFileSize));
 
         $filePath = tempnam($this->tempOutputDir, 'large_file') . '.json';
         file_put_contents($filePath, str_repeat('a', $maxFileSize + 1));
@@ -392,7 +394,7 @@ final class CycloneDxParserTest extends TestCase
     public function parseFromFileAcceptsFileWithinCustomMaxFileSize(): void
     {
         $payload = '{"bomFormat":"CycloneDX","specVersion":"1.5"}';
-        $parser = new CycloneDxParser(strlen($payload) + 1);
+        $parser = new CycloneDxParser(new CycloneDxParserOptions(maxFileSize: strlen($payload) + 1));
 
         $filePath = tempnam($this->tempOutputDir, 'within_cap') . '.json';
         file_put_contents($filePath, $payload);
@@ -403,32 +405,9 @@ final class CycloneDxParserTest extends TestCase
     }
 
     #[Test]
-    public function defaultMaxFileSizeMatchesPublicConstant(): void
-    {
-        self::assertSame(10 * 1024 * 1024, CycloneDxParser::DEFAULT_MAX_FILE_SIZE);
-    }
-
-    #[Test]
-    #[DataProvider('invalidMaxFileSizeProvider')]
-    public function constructorRejectsNonPositiveMaxFileSize(int $invalid): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('maxFileSize must be a positive integer');
-        new CycloneDxParser($invalid);
-    }
-
-    /** @return \Generator<string, array{int}> */
-    public static function invalidMaxFileSizeProvider(): \Generator
-    {
-        yield 'zero' => [0];
-        yield 'negative one' => [-1];
-        yield 'large negative' => [-1024 * 1024];
-    }
-
-    #[Test]
     public function isValidSbomFileReturnsFalseForFileExceedingMaxSize(): void
     {
-        $parser = new CycloneDxParser(64);
+        $parser = new CycloneDxParser(new CycloneDxParserOptions(maxFileSize: 64));
 
         $filePath = tempnam($this->tempOutputDir, 'over_cap') . '.json';
         file_put_contents($filePath, str_repeat('a', 256));
