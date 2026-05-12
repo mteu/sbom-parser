@@ -105,20 +105,21 @@ To override defaults, build a `CycloneDxParserOptions` and pass it in:
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
 
+// All arguments are optional
 $options = new CycloneDxParserOptions(
     maxFileSize: 50 * 1024 * 1024,
     maxNodes: 5_000_000,
+    allowedBaseDirectories: ['/srv/sboms'],
 );
 
 $parser = new CycloneDxParser($options);
 
-// Or use the fluent `with*` mutator or any of these options while preserving the other option(s).
+// Or use the fluent `with*` mutators to change individual options while preserving the others.
 $parser = new CycloneDxParser(
-    (new CycloneDxParserOptions())->withMaxFileSize(50 * 1024 * 1024),
-);
-
-$parser = new CycloneDxParser(
-    (new CycloneDxParserOptions())->withMaxNodes(5_000_000),
+    (new CycloneDxParserOptions())
+        ->withMaxFileSize(50 * 1024 * 1024)
+        ->withMaxNodes(5_000_000)
+        ->withAllowedBaseDirectories(['/srv/sboms', '/var/www/bom']),
 );
 ```
 
@@ -130,7 +131,25 @@ $parser = new CycloneDxParser(
 
 `parseFromArray` enforces a default maximum total node count in the decoded SBOM tree of `1_000_000` nodes to parsed (`CycloneDxParserOptions::DEFAULT_MAX_NODES`). Raise it by configuring `maxNodes` on the options DTO as shown above.
 
+### Allowed base directories
 
+`parseFromFile` and `isValidSbomFile` perform absolute-path and directory-traversal
+checks on every call, but by default they will happily read any `.json` file the
+PHP process has access to. When the file path comes from untrusted input (HTTP request,
+queue payload, CLI argument), restrict reads to a known set of directories by configuring
+`allowedBaseDirectories`:
+
+```php
+$parser = new CycloneDxParser(
+    new CycloneDxParserOptions(allowedBaseDirectories: ['/srv/sboms']),
+);
+
+// Accepted - resolves under /srv/sboms
+$parser->parseFromFile('/srv/sboms/customer-42/bom.json');
+
+// Rejected - SbomParseException
+$parser->parseFromFile('/etc/passwd.json');
+```
 
 ## Error Handling
 

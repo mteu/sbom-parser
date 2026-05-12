@@ -416,6 +416,125 @@ final class CycloneDxParserTest extends TestCase
     }
 
     #[Test]
+    public function parseFromFileAcceptsPathWithinAllowedBaseDirectory(): void
+    {
+        $base = (string) realpath($this->tempOutputDir);
+        $parser = new CycloneDxParser(
+            new CycloneDxParserOptions(allowedBaseDirectories: [$base]),
+        );
+
+        $filePath = $this->tempOutputDir . '/sbom.json';
+        file_put_contents($filePath, '{"bomFormat":"CycloneDX","specVersion":"1.5"}');
+
+        $bom = $parser->parseFromFile($filePath);
+
+        self::assertSame('1.5', $bom->specVersion);
+    }
+
+    #[Test]
+    public function parseFromFileRejectsPathOutsideAllowedBaseDirectory(): void
+    {
+        $allowed = $this->tempOutputDir . '/allowed';
+        $other = $this->tempOutputDir . '/other';
+        mkdir($allowed, 0755, true);
+        mkdir($other, 0755, true);
+
+        $parser = new CycloneDxParser(
+            new CycloneDxParserOptions(allowedBaseDirectories: [(string) realpath($allowed)]),
+        );
+
+        $filePath = $other . '/sbom.json';
+        file_put_contents($filePath, '{"bomFormat":"CycloneDX","specVersion":"1.5"}');
+
+        $this->expectException(SbomParseException::class);
+        $this->expectExceptionMessage('SBOM file path is outside the allowed base directories');
+        $parser->parseFromFile($filePath);
+    }
+
+    #[Test]
+    public function parseFromFileAcceptsPathWithinAnyOfMultipleAllowedDirectories(): void
+    {
+        $first = $this->tempOutputDir . '/first';
+        $second = $this->tempOutputDir . '/second';
+        mkdir($first, 0755, true);
+        mkdir($second, 0755, true);
+
+        $parser = new CycloneDxParser(
+            new CycloneDxParserOptions(
+                allowedBaseDirectories: [
+                    (string) realpath($first),
+                    (string) realpath($second),
+                ],
+            ),
+        );
+
+        $filePath = $second . '/sbom.json';
+        file_put_contents($filePath, '{"bomFormat":"CycloneDX","specVersion":"1.5"}');
+
+        $bom = $parser->parseFromFile($filePath);
+
+        self::assertSame('1.5', $bom->specVersion);
+    }
+
+    #[Test]
+    public function parseFromFileRejectsSiblingDirectoryWithSharedPrefix(): void
+    {
+        $allowed = $this->tempOutputDir . '/data';
+        $sibling = $this->tempOutputDir . '/data-other';
+        mkdir($allowed, 0755, true);
+        mkdir($sibling, 0755, true);
+
+        $parser = new CycloneDxParser(
+            new CycloneDxParserOptions(allowedBaseDirectories: [(string) realpath($allowed)]),
+        );
+
+        $filePath = $sibling . '/sbom.json';
+        file_put_contents($filePath, '{"bomFormat":"CycloneDX","specVersion":"1.5"}');
+
+        $this->expectException(SbomParseException::class);
+        $this->expectExceptionMessage('SBOM file path is outside the allowed base directories');
+        $parser->parseFromFile($filePath);
+    }
+
+    #[Test]
+    public function parseFromFileIgnoresAllowedBaseDirectoriesWhenEmpty(): void
+    {
+        $parser = new CycloneDxParser(
+            new CycloneDxParserOptions(allowedBaseDirectories: []),
+        );
+
+        $filePath = $this->tempOutputDir . '/sbom.json';
+        file_put_contents($filePath, '{"bomFormat":"CycloneDX","specVersion":"1.5"}');
+
+        $bom = $parser->parseFromFile($filePath);
+
+        self::assertSame('1.5', $bom->specVersion);
+    }
+
+    #[Test]
+    public function parseFromFileSkipsNonExistentAllowedBaseDirectory(): void
+    {
+        $allowed = $this->tempOutputDir . '/real';
+        mkdir($allowed, 0755, true);
+
+        $parser = new CycloneDxParser(
+            new CycloneDxParserOptions(
+                allowedBaseDirectories: [
+                    $this->tempOutputDir . '/does-not-exist',
+                    (string) realpath($allowed),
+                ],
+            ),
+        );
+
+        $filePath = $allowed . '/sbom.json';
+        file_put_contents($filePath, '{"bomFormat":"CycloneDX","specVersion":"1.5"}');
+
+        $bom = $parser->parseFromFile($filePath);
+
+        self::assertSame('1.5', $bom->specVersion);
+    }
+
+    #[Test]
     public function parseFromArrayRejectsPayloadExceedingNodeBudget(): void
     {
         $parser = new CycloneDxParser(new CycloneDxParserOptions(maxNodes: 10));
