@@ -415,6 +415,82 @@ final class CycloneDxParserTest extends TestCase
         self::assertFalse($parser->isValidSbomFile($filePath));
     }
 
+    #[Test]
+    public function parseFromArrayRejectsPayloadExceedingNodeBudget(): void
+    {
+        $parser = new CycloneDxParser(new CycloneDxParserOptions(maxNodes: 10));
+
+        $components = [];
+        for ($i = 0; $i < 100; $i++) {
+            $components[] = ['type' => 'library', 'name' => "lib-{$i}"];
+        }
+
+        $data = [
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => $components,
+        ];
+
+        $this->expectException(SbomParseException::class);
+        $this->expectExceptionMessage('Decoded SBOM exceeds maximum node count of 10');
+        $parser->parseFromArray($data);
+    }
+
+    #[Test]
+    public function parseFromArrayAcceptsPayloadWithinNodeBudget(): void
+    {
+        $parser = new CycloneDxParser(new CycloneDxParserOptions(maxNodes: 100));
+
+        $bom = $parser->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [['type' => 'library', 'name' => 'lib']],
+        ]);
+
+        self::assertSame('CycloneDX', $bom->bomFormat);
+    }
+
+    #[Test]
+    public function parseFromJsonRejectsWidePayloadExceedingNodeBudget(): void
+    {
+        $parser = new CycloneDxParser(new CycloneDxParserOptions(maxNodes: 50));
+
+        $wide = [];
+        for ($i = 0; $i < 200; $i++) {
+            $wide["k{$i}"] = $i;
+        }
+
+        $json = (string) json_encode([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'metadata' => ['properties' => $wide],
+        ]);
+
+        $this->expectException(SbomParseException::class);
+        $this->expectExceptionMessage('Decoded SBOM exceeds maximum node count');
+        $parser->parseFromJson($json);
+    }
+
+    #[Test]
+    public function parseFromArrayRenamesBomRefToBomRef(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'symfony/console',
+                    'bom-ref' => 'composer/symfony/console',
+                ],
+            ],
+        ]);
+
+        $components = $bom->components ?? [];
+        self::assertCount(1, $components);
+        self::assertSame('composer/symfony/console', $components[0]->bomRef);
+    }
+
     /** @return \Generator<string, array{string, string}> */
     public static function parseFromFileFixtureProvider(): \Generator
     {

@@ -11,7 +11,7 @@
     ],
     "require": {
         "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
-        "cuyz/valinor": "^2.0"
+        "cuyz/valinor": "^2.4"
     },
     "require-dev": {
         "armin/editorconfig-cli": "^2.1",

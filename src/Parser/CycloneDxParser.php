@@ -24,15 +24,9 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Parser;
 
 use CuyZ\Valinor\Mapper\MappingError;
-use CuyZ\Valinor\Mapper\Tree\Message\Messages;
-use CuyZ\Valinor\Mapper\Tree\Message\NodeMessage;
 use CuyZ\Valinor\Mapper\TreeMapper;
 use CuyZ\Valinor\MapperBuilder;
 use mteu\SbomParser\Entity\Bom;
-use mteu\SbomParser\Entity\Component;
-use mteu\SbomParser\Entity\ComponentType;
-use mteu\SbomParser\Entity\ExternalReferenceType;
-use mteu\SbomParser\Entity\HashAlgorithm;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 
@@ -57,6 +51,9 @@ final readonly class CycloneDxParser implements Parser
     ) {
         $this->mapper = (new MapperBuilder())
             ->supportDateFormats('Y-m-d\TH:i:s.u\Z', 'Y-m-d\TH:i:s\Z', \DateTimeImmutable::ATOM)
+            ->registerKeyConverter(
+                static fn (string $key): string => $key === 'bom-ref' ? 'bomRef' : $key,
+            )
             ->allowSuperfluousKeys()
             ->mapper();
     }
@@ -83,7 +80,7 @@ final readonly class CycloneDxParser implements Parser
     public function parseFromArray(array $data): Bom
     {
         $this->validateDataStructure($data);
-        $data = $this->normalizeHyphenatedKeys($data);
+        $this->enforceNodeBudget($data);
 
         try {
             return $this->mapper->map(Bom::class, $data);
@@ -96,24 +93,36 @@ final readonly class CycloneDxParser implements Parser
     }
 
     /**
-     * @param mixed[] $data
-     * @return array<string, mixed>
+     * Walk the decoded structure once and abort if the total number of
+     * values exceeds {@see CycloneDxParserOptions::$maxNodes}. Protects
+     * against wide JSON payloads that fit under the file-size cap but
+     * would otherwise blow up memory during Valinor mapping.
+     *
+     * @param array<int|string, mixed> $data
+     * @throws SbomParseException
      */
-    private function normalizeHyphenatedKeys(array $data): array
+    private function enforceNodeBudget(array $data): void
     {
-        $keyMap = [
-            'bom-ref' => 'bomRef',
-        ];
+        $count = 0;
+        $stack = [$data];
 
-        $result = [];
-        foreach ($data as $key => $value) {
-            $normalizedKey = $keyMap[(string) $key] ?? (string) $key;
-            $result[$normalizedKey] = is_array($value)
-                ? $this->normalizeHyphenatedKeys($value)
-                : $value;
+        while ($stack !== []) {
+            $current = array_pop($stack);
+            foreach ($current as $value) {
+                $count++;
+                if ($count > $this->options->maxNodes) {
+                    throw SbomParseException::validationFailed(
+                        sprintf(
+                            'Decoded SBOM exceeds maximum node count of %d',
+                            $this->options->maxNodes,
+                        )
+                    );
+                }
+                if (is_array($value)) {
+                    $stack[] = $value;
+                }
+            }
         }
-
-        return $result;
     }
 
     /** @codeCoverageIgnore */
