@@ -4,10 +4,15 @@ on:
     tags:
       - '*'
 
+permissions:
+  contents: read
+
 jobs:
   # Job: Create release
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       release-notes-url: ${{ steps.create-release.outputs.url }}
     steps:
