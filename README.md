@@ -29,6 +29,17 @@ metadata with full immutable entity design using Valinor for type mapping.
 > package aims to provide.
 
 ## ⚡️ Quick Start
+
+### Installation
+
+Require the library in your project with Composer:
+
+`composer require mteu/sbom-parser`
+
+### Usage
+
+Instantiate `mteu\SbomParser\Parser\CycloneDxParser`, read in
+the SBOM file, and access the components directly:
 ```php
 use mteu\SbomParser\Parser\CycloneDxParser;
 
