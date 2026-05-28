@@ -39,7 +39,7 @@ Require the library in your project with Composer:
 ### Usage
 
 Instantiate `mteu\SbomParser\Parser\CycloneDxParser`, read in
-the SBOM file, and access the compontents directly:
+the SBOM file, and access the components directly:
 ```php
 use mteu\SbomParser\Parser\CycloneDxParser;
 
