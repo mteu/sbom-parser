@@ -610,6 +610,34 @@ final class CycloneDxParserTest extends TestCase
         self::assertSame('composer/symfony/console', $components[0]->bomRef);
     }
 
+    #[Test]
+    public function parseFromArrayHydratesLicenseChoices(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.7',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'licensed-component',
+                    'licenses' => [
+                        [
+                            'license' => ['id' => 'MIT'],
+                        ],
+                        ['expression' => 'Apache-2.0 OR MIT'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $licenses = $bom->components[0]->licenses ?? [];
+
+        self::assertCount(2, $licenses);
+        self::assertNotNull($licenses[0]->license);
+        self::assertSame('MIT', $licenses[0]->license->id);
+        self::assertSame('Apache-2.0 OR MIT', $licenses[1]->expression);
+    }
+
     /** @return \Generator<string, array{string, string}> */
     public static function parseFromFileFixtureProvider(): \Generator
     {

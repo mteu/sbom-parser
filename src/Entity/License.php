@@ -37,14 +37,7 @@ final readonly class License
         public ?string $name = null,
         public ?string $text = null,
         public ?string $url = null,
-        public ?string $expression = null,
     ) {
-    }
-
-
-    public function hasExpression(): bool
-    {
-        return $this->expression !== null;
     }
 
 }

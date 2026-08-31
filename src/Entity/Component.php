@@ -44,7 +44,7 @@ final readonly class Component
         public ?string $scope = null,
         /** @var Hash[]|null */
         public ?array $hashes = null,
-        /** @var License[]|null */
+        /** @var list<LicenseChoice>|null */
         public ?array $licenses = null,
         public ?string $copyright = null,
         public ?string $cpe = null,
