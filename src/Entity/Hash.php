@@ -33,7 +33,7 @@ namespace mteu\SbomParser\Entity;
 final readonly class Hash
 {
     public function __construct(
-        public HashAlgorithm $algorithm,
+        public HashAlgorithm $alg,
         public string $content,
     ) {
     }

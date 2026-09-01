@@ -916,6 +916,33 @@ final class CycloneDxParserTest extends TestCase
     }
 
     #[Test]
+    public function parseFromArrayHydratesHash(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.7',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'component',
+                    'hashes' => [
+                        [
+                            'alg' => 'SHA-256',
+                            'content' => 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $hashes = $bom->components[0]->hashes ?? [];
+
+        self::assertCount(1, $hashes);
+        self::assertSame('SHA-256', $hashes[0]->alg->value);
+        self::assertSame('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', $hashes[0]->content);
+    }
+
+    #[Test]
     #[DataProvider('isValidSbomFileProvider')]
     public function isValidSbomFile(string $filePath, bool $expected): void
     {
