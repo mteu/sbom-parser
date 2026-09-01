@@ -45,7 +45,7 @@ final readonly class Service
         public ?bool $xTrustBoundary = null,
         /** @var DataClassification[]|null */
         public ?array $data = null,
-        /** @var License[]|null */
+        /** @var list<LicenseChoice>|null */
         public ?array $licenses = null,
         /** @var ExternalReference[]|null */
         public ?array $externalReferences = null,
