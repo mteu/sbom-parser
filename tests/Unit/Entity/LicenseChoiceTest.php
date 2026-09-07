@@ -24,23 +24,24 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Tests\Unit\Entity;
 
 use mteu\SbomParser\Entity\License;
+use mteu\SbomParser\Entity\LicenseChoice;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * LicenseTest.
+ * LicenseChoiceTest.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  */
-#[CoversClass(License::class)]
-final class LicenseTest extends TestCase
+#[CoversClass(LicenseChoice::class)]
+final class LicenseChoiceTest extends TestCase
 {
     #[Test]
     public function hasExpressionReturnsFalseWhenNull(): void
     {
-        $license = new License(id: 'MIT');
+        $license = new LicenseChoice(license: new License(id: 'MIT'));
 
         self::assertFalse($license->hasExpression());
     }
@@ -48,7 +49,7 @@ final class LicenseTest extends TestCase
     #[Test]
     public function hasExpressionReturnsTrueWhenExpressionExists(): void
     {
-        $license = new License(expression: 'MIT OR Apache-2.0');
+        $license = new LicenseChoice(expression: 'MIT OR Apache-2.0');
 
         self::assertTrue($license->hasExpression());
     }
@@ -56,7 +57,7 @@ final class LicenseTest extends TestCase
     #[Test]
     public function hasExpressionReturnsTrueWhenExpressionIsEmptyString(): void
     {
-        $license = new License(expression: '');
+        $license = new LicenseChoice(expression: '');
 
         self::assertTrue($license->hasExpression());
     }
