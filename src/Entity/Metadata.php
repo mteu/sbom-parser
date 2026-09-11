@@ -38,7 +38,7 @@ final readonly class Metadata
         public ?array $tools = null,
         /** @var OrganizationalEntity[]|null */
         public ?array $authors = null,
-        public ?OrganizationalEntity $component = null,
+        public ?Component $component = null,
         public ?OrganizationalEntity $manufacture = null,
         public ?OrganizationalEntity $supplier = null,
         /** @var LifecyclePhase[]|null */
