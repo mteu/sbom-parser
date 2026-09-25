@@ -23,10 +23,12 @@ declare(strict_types=1);
 
 namespace mteu\SbomParser\Tests\Unit\Parser;
 
+use mteu\SbomParser\Entity\Attachment;
 use mteu\SbomParser\Entity\Bom;
 use mteu\SbomParser\Entity\Component;
 use mteu\SbomParser\Entity\ComponentType;
 use mteu\SbomParser\Entity\Dependency;
+use mteu\SbomParser\Entity\LicenseAcknowledgement;
 use mteu\SbomParser\Entity\OrganizationalContact;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
@@ -640,6 +642,153 @@ final class CycloneDxParserTest extends TestCase
         self::assertNotNull($licenses[0]->license);
         self::assertSame('MIT', $licenses[0]->license->id);
         self::assertSame('Apache-2.0 OR MIT', $licenses[1]->expression);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesLicenseTextAsAttachment(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'licensed-component',
+                    'licenses' => [
+                        [
+                            'license' => [
+                                'name' => 'Custom License',
+                                'text' => [
+                                    'contentType' => 'text/plain',
+                                    'encoding' => 'base64',
+                                    'content' => 'FooBar',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $license = ($bom->components[0]->licenses ?? [])[0]->license ?? null;
+
+        self::assertNotNull($license);
+        self::assertSame('Custom License', $license->name);
+        self::assertInstanceOf(Attachment::class, $license->text);
+        self::assertSame('text/plain', $license->text->contentType);
+        self::assertSame('base64', $license->text->encoding);
+        self::assertSame('FooBar', $license->text->content);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesLicenseTextWithoutOptionalAttachmentFields(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'licensed-component',
+                    'licenses' => [
+                        [
+                            'license' => [
+                                'name' => 'Custom License',
+                                'text' => ['content' => 'MIT'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $license = ($bom->components[0]->licenses ?? [])[0]->license ?? null;
+
+        self::assertNotNull($license);
+        self::assertInstanceOf(Attachment::class, $license->text);
+        self::assertSame('MIT', $license->text->content);
+        self::assertNull($license->text->contentType);
+        self::assertNull($license->text->encoding);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesLicenseAcknowledgement(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'licensed-component',
+                    'licenses' => [
+                        [
+                            'license' => ['id' => 'MIT', 'acknowledgement' => 'declared'],
+                        ],
+                        [
+                            'expression' => 'Apache-2.0 OR MIT',
+                            'acknowledgement' => 'concluded',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $licenses = $bom->components[0]->licenses ?? [];
+
+        self::assertCount(2, $licenses);
+        self::assertSame(LicenseAcknowledgement::DECLARED, $licenses[0]->license?->acknowledgement);
+        self::assertSame(LicenseAcknowledgement::CONCLUDED, $licenses[1]->acknowledgement);
+    }
+
+    #[Test]
+    public function parseFromArrayLeavesLicenseAcknowledgementNullWhenAbsent(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'licensed-component',
+                    'licenses' => [['license' => ['id' => 'MIT']]],
+                ],
+            ],
+        ]);
+
+        $licenses = $bom->components[0]->licenses ?? [];
+
+        self::assertCount(1, $licenses);
+        self::assertNull($licenses[0]->license?->acknowledgement);
+        self::assertNull($licenses[0]->acknowledgement);
+    }
+
+    /**
+     * Acknowledgement was introduced in CycloneDX 1.6, so the 1.4 and 1.5
+     * fixtures legitimately carry none.
+     */
+    #[Test]
+    public function parseFromFileHydratesLicenseAcknowledgementFromFixtures(): void
+    {
+        foreach (['1.6', '1.7'] as $version) {
+            $bom = $this->subject->parseFromFile(self::fixtureDir() . "/bom-{$version}.json");
+
+            $acknowledgements = [];
+            foreach ($bom->components ?? [] as $component) {
+                foreach ($component->licenses ?? [] as $licenseChoice) {
+                    $acknowledgement = $licenseChoice->license?->acknowledgement;
+                    if ($acknowledgement !== null) {
+                        $acknowledgements[] = $acknowledgement;
+                    }
+                }
+            }
+
+            self::assertContains(
+                LicenseAcknowledgement::DECLARED,
+                $acknowledgements,
+                sprintf('bom-%s.json declares license acknowledgements that were not hydrated.', $version),
+            );
+        }
     }
 
     /** @return \Generator<string, array{string, string}> */

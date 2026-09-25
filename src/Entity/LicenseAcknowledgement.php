@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of the package "mteu/sbom-parser".
  *
- * Copyright (C) 2025 Martin Adler <mteu@mailbox.org>
+ * Copyright (C) 2026 Martin Adler <mteu@mailbox.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,21 +24,13 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Entity;
 
 /**
- * License based on CycloneDX 1.4+ specification.
+ * LicenseAcknowledgement enum based on CycloneDX 1.6 specification.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
- * @codeCoverageIgnore
  */
-final readonly class License
+enum LicenseAcknowledgement: string
 {
-    public function __construct(
-        public ?string $id = null,
-        public ?string $name = null,
-        public ?Attachment $text = null,
-        public ?string $url = null,
-        public ?LicenseAcknowledgement $acknowledgement = null,
-    ) {
-    }
-
+    case DECLARED = 'declared';
+    case CONCLUDED = 'concluded';
 }
