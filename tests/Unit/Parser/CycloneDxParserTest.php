@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace mteu\SbomParser\Tests\Unit\Parser;
 
+use mteu\SbomParser\Entity\Attachment;
 use mteu\SbomParser\Entity\Bom;
 use mteu\SbomParser\Entity\Component;
 use mteu\SbomParser\Entity\ComponentType;
@@ -640,6 +641,73 @@ final class CycloneDxParserTest extends TestCase
         self::assertNotNull($licenses[0]->license);
         self::assertSame('MIT', $licenses[0]->license->id);
         self::assertSame('Apache-2.0 OR MIT', $licenses[1]->expression);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesLicenseTextAsAttachment(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'licensed-component',
+                    'licenses' => [
+                        [
+                            'license' => [
+                                'name' => 'Custom License',
+                                'text' => [
+                                    'contentType' => 'text/plain',
+                                    'encoding' => 'base64',
+                                    'content' => 'FooBar',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $license = ($bom->components[0]->licenses ?? [])[0]->license ?? null;
+
+        self::assertNotNull($license);
+        self::assertSame('Custom License', $license->name);
+        self::assertInstanceOf(Attachment::class, $license->text);
+        self::assertSame('text/plain', $license->text->contentType);
+        self::assertSame('base64', $license->text->encoding);
+        self::assertSame('FooBar', $license->text->content);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesLicenseTextWithoutOptionalAttachmentFields(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'licensed-component',
+                    'licenses' => [
+                        [
+                            'license' => [
+                                'name' => 'Custom License',
+                                'text' => ['content' => 'MIT'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $license = ($bom->components[0]->licenses ?? [])[0]->license ?? null;
+
+        self::assertNotNull($license);
+        self::assertInstanceOf(Attachment::class, $license->text);
+        self::assertSame('MIT', $license->text->content);
+        self::assertNull($license->text->contentType);
+        self::assertNull($license->text->encoding);
     }
 
     /** @return \Generator<string, array{string, string}> */
