@@ -24,6 +24,9 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Tests\Unit\Parser;
 
 use mteu\SbomParser\Entity\Bom;
+use mteu\SbomParser\Entity\Component;
+use mteu\SbomParser\Entity\ComponentType;
+use mteu\SbomParser\Entity\Dependency;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
@@ -630,6 +633,26 @@ final class CycloneDxParserTest extends TestCase
         self::assertInstanceOf(Bom::class, $bom);
         self::assertSame('CycloneDX', $bom->bomFormat);
         self::assertSame($expectedVersion, $bom->specVersion);
+    }
+
+    #[Test]
+    #[DataProvider('parseFromJsonFixtureProvider')]
+    public function parseFromFileMapsMetadataComponentAsTheRootComponent(string $fixturePath): void
+    {
+        $bom = $this->subject->parseFromFile($fixturePath);
+
+        $root = $bom->metadata?->component;
+        self::assertInstanceOf(Component::class, $root);
+        self::assertSame(ComponentType::APPLICATION, $root->type);
+        self::assertSame('mteu/sbom-parser-dev-main', $root->bomRef);
+        self::assertSame('pkg:composer/mteu/sbom-parser@dev-main', $root->purl);
+        self::assertSame('dev-main', $root->version);
+
+        $dependencyRefs = array_map(
+            static fn (Dependency $dependency): string => $dependency->ref,
+            $bom->dependencies ?? [],
+        );
+        self::assertContains($root->bomRef, $dependencyRefs);
     }
 
     /** @return \Generator<string, array{string}> */
