@@ -31,6 +31,7 @@ use mteu\SbomParser\Entity\Dependency;
 use mteu\SbomParser\Entity\LicenseAcknowledgement;
 use mteu\SbomParser\Entity\LicenseType;
 use mteu\SbomParser\Entity\OrganizationalContact;
+use mteu\SbomParser\Entity\Tool;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
@@ -1201,6 +1202,101 @@ final class CycloneDxParserTest extends TestCase
         self::assertCount(1, $licenses);
         self::assertTrue($licenses[0]->hasExpression());
         self::assertSame('Apache-2.0 OR MIT', $licenses[0]->expression);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesModernToolsObject(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'metadata' => [
+                'tools' => [
+                    'components' => [
+                        ['type' => 'application', 'name' => 'cyclonedx-php-composer', 'version' => '6.0'],
+                    ],
+                    'services' => [
+                        ['name' => 'sbom-service'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $tools = $bom->metadata?->tools;
+
+        self::assertNotNull($tools);
+        self::assertNull($tools->legacyTools);
+
+        $components = $tools->components ?? [];
+        $services = $tools->services ?? [];
+
+        self::assertCount(1, $components);
+        self::assertSame('cyclonedx-php-composer', $components[0]->name);
+        self::assertSame(ComponentType::APPLICATION, $components[0]->type);
+        self::assertCount(1, $services);
+        self::assertSame('sbom-service', $services[0]->name);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesLegacyToolsArray(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.4',
+            'metadata' => [
+                'tools' => [
+                    ['vendor' => 'cyclonedx', 'name' => 'cyclonedx-php-composer', 'version' => '6.0'],
+                    ['name' => 'composer', 'version' => '2.9.5'],
+                ],
+            ],
+        ]);
+
+        $tools = $bom->metadata?->tools;
+
+        self::assertNotNull($tools);
+        self::assertNull($tools->components);
+        self::assertNull($tools->services);
+
+        $legacyTools = $tools->legacyTools ?? [];
+
+        self::assertCount(2, $legacyTools);
+        self::assertInstanceOf(Tool::class, $legacyTools[0]);
+        self::assertSame('cyclonedx', $legacyTools[0]->vendor);
+        self::assertSame('cyclonedx-php-composer', $legacyTools[0]->name);
+        self::assertSame('composer', $legacyTools[1]->name);
+        self::assertNull($legacyTools[1]->vendor);
+    }
+
+    #[Test]
+    public function parseFromArrayLeavesToolsNullWhenAbsent(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'metadata' => ['timestamp' => '2026-01-15T00:00:00Z'],
+        ]);
+
+        self::assertNull($bom->metadata?->tools);
+    }
+
+    #[Test]
+    public function parseFromFileHydratesLegacyToolsFromFixtures(): void
+    {
+        foreach (CycloneDxParser::SUPPORTED_VERSIONS as $version) {
+            $bom = $this->subject->parseFromFile(self::fixtureDir() . "/bom-{$version}.json");
+
+            $tools = $bom->metadata?->tools;
+
+            self::assertNotNull($tools, sprintf('bom-%s.json declares metadata.tools.', $version));
+
+            $legacyTools = $tools->legacyTools ?? [];
+
+            self::assertNotEmpty(
+                $legacyTools,
+                sprintf('bom-%s.json declares tools that were not hydrated.', $version),
+            );
+            self::assertSame('composer', $legacyTools[0]->name);
+        }
     }
 
     #[Test]
