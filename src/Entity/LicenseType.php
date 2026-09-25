@@ -24,25 +24,27 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Entity;
 
 /**
- * License based on CycloneDX 1.4+ specification.
+ * LicenseType enum based on CycloneDX 1.5 specification.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
- * @codeCoverageIgnore
  */
-final readonly class License
+enum LicenseType: string
 {
-    public function __construct(
-        public ?string $id = null,
-        public ?string $name = null,
-        public ?Attachment $text = null,
-        public ?string $url = null,
-        public ?LicenseAcknowledgement $acknowledgement = null,
-        public ?string $bomRef = null,
-        public ?Licensing $licensing = null,
-        /** @var Property[]|null */
-        public ?array $properties = null,
-    ) {
-    }
-
+    case ACADEMIC = 'academic';
+    case APPLIANCE = 'appliance';
+    case CLIENT_ACCESS = 'client-access';
+    case CONCURRENT_USER = 'concurrent-user';
+    case CORE_POINTS = 'core-points';
+    case CUSTOM_METRIC = 'custom-metric';
+    case DEVICE = 'device';
+    case EVALUATION = 'evaluation';
+    case NAMED_USER = 'named-user';
+    case NODE_LOCKED = 'node-locked';
+    case OEM = 'oem';
+    case PERPETUAL = 'perpetual';
+    case PROCESSOR_POINTS = 'processor-points';
+    case SUBSCRIPTION = 'subscription';
+    case USER = 'user';
+    case OTHER = 'other';
 }
