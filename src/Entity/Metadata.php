@@ -36,7 +36,7 @@ final readonly class Metadata
         public ?\DateTimeImmutable $timestamp = null,
         /** @var Tool[]|null */
         public ?array $tools = null,
-        /** @var OrganizationalEntity[]|null */
+        /** @var OrganizationalContact[]|null */
         public ?array $authors = null,
         public ?Component $component = null,
         public ?OrganizationalEntity $manufacture = null,
