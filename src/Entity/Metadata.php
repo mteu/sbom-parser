@@ -45,6 +45,8 @@ final readonly class Metadata
         public ?array $lifecycles = null,
         /** @var Property[]|null */
         public ?array $properties = null,
+        /** @var list<LicenseChoice>|null */
+        public ?array $licenses = null,
     ) {
     }
 
