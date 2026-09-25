@@ -66,11 +66,34 @@ $component->name;               // Component name
 $component->version;            // Version string
 $component->type;               // ComponentType enum
 $component->purl;               // PURL if available
-$component->licenses ?? [];     // Array of License objects
+$component->licenses ?? [];     // Array of LicenseChoice objects
 $component->hashes ?? [];       // Array of Hash objects
 $component->components ?? [];   // Nested components
 $component->hasComponents();    // Check if has nested components
 ```
+
+### License Entity: [`LicenseChoice`](../src/Entity/LicenseChoice.php)
+
+CycloneDX does not list licenses directly. Each entry in `licenses` is a
+`LicenseChoice`, which carries *either* a `License` object *or* an SPDX
+license expression:
+
+```php
+foreach ($component->licenses ?? [] as $licenseChoice) {
+    if ($licenseChoice->hasExpression()) {
+        $licenseChoice->expression;     // e.g. 'Apache-2.0 OR MIT'
+
+        continue;
+    }
+
+    $licenseChoice->license?->id;       // SPDX identifier, e.g. 'MIT'
+    $licenseChoice->license?->name;     // Named license, when no SPDX id applies
+    $licenseChoice->license?->url;      // Reference URL, if provided
+}
+```
+
+The same shape applies to `Service::$licenses` and
+`ComponentEvidence::$licenses`.
 
 ## File Validation
 
