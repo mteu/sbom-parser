@@ -24,20 +24,22 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Entity;
 
 /**
- * Component evidence for license and copyright information.
+ * License choice based on CycloneDX 1.4+ specification.
  *
- * @author Martin Adler <mteu@mailbox.org>
+ * @author Radosław Szulerecki <radek@madenet.pl>
  * @license GPL-3.0-or-later
  * @codeCoverageIgnore
  */
-final readonly class ComponentEvidence
+final readonly class LicenseChoice
 {
     public function __construct(
-        /** @var list<LicenseChoice>|null */
-        public ?array $licenses = null,
-        /** @var Copyright[]|null */
-        public ?array $copyright = null,
+        public ?License $license = null,
+        public ?string $expression = null,
     ) {
     }
 
+    public function hasExpression(): bool
+    {
+        return $this->expression !== null;
+    }
 }
