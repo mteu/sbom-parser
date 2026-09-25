@@ -1158,6 +1158,52 @@ final class CycloneDxParserTest extends TestCase
     }
 
     #[Test]
+    public function parseFromArrayHydratesMetadataLicenses(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'metadata' => [
+                'licenses' => [
+                    [
+                        'license' => ['id' => 'GPL-3.0-or-later', 'acknowledgement' => 'declared'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $licenses = $bom->metadata->licenses ?? [];
+
+        self::assertCount(1, $licenses);
+
+        $license = $licenses[0]->license;
+
+        self::assertNotNull($license);
+        self::assertSame('GPL-3.0-or-later', $license->id);
+        self::assertSame(LicenseAcknowledgement::DECLARED, $license->acknowledgement);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesMetadataLicenseExpression(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'metadata' => [
+                'licenses' => [
+                    ['expression' => 'Apache-2.0 OR MIT'],
+                ],
+            ],
+        ]);
+
+        $licenses = $bom->metadata->licenses ?? [];
+
+        self::assertCount(1, $licenses);
+        self::assertTrue($licenses[0]->hasExpression());
+        self::assertSame('Apache-2.0 OR MIT', $licenses[0]->expression);
+    }
+
+    #[Test]
     public function parseFromArrayHydratesPatentAssertionAndAlgorithmProperties(): void
     {
         $data = [
