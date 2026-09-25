@@ -36,6 +36,7 @@ final readonly class LicenseChoice
         public ?License $license = null,
         public ?string $expression = null,
         public ?LicenseAcknowledgement $acknowledgement = null,
+        public ?string $bomRef = null,
     ) {
     }
 

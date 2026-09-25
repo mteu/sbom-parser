@@ -24,30 +24,27 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Entity;
 
 /**
- * Metadata based on CycloneDX 1.4+ specification.
+ * LicenseType enum based on CycloneDX 1.5 specification.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
- * @codeCoverageIgnore
  */
-final readonly class Metadata
+enum LicenseType: string
 {
-    public function __construct(
-        public ?\DateTimeImmutable $timestamp = null,
-        /** @var Tool[]|null */
-        public ?array $tools = null,
-        /** @var OrganizationalContact[]|null */
-        public ?array $authors = null,
-        public ?Component $component = null,
-        public ?OrganizationalEntity $manufacture = null,
-        public ?OrganizationalEntity $supplier = null,
-        /** @var LifecyclePhase[]|null */
-        public ?array $lifecycles = null,
-        /** @var Property[]|null */
-        public ?array $properties = null,
-        /** @var list<LicenseChoice>|null */
-        public ?array $licenses = null,
-    ) {
-    }
-
+    case ACADEMIC = 'academic';
+    case APPLIANCE = 'appliance';
+    case CLIENT_ACCESS = 'client-access';
+    case CONCURRENT_USER = 'concurrent-user';
+    case CORE_POINTS = 'core-points';
+    case CUSTOM_METRIC = 'custom-metric';
+    case DEVICE = 'device';
+    case EVALUATION = 'evaluation';
+    case NAMED_USER = 'named-user';
+    case NODE_LOCKED = 'node-locked';
+    case OEM = 'oem';
+    case PERPETUAL = 'perpetual';
+    case PROCESSOR_POINTS = 'processor-points';
+    case SUBSCRIPTION = 'subscription';
+    case USER = 'user';
+    case OTHER = 'other';
 }

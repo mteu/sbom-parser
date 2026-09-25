@@ -38,6 +38,10 @@ final readonly class License
         public ?Attachment $text = null,
         public ?string $url = null,
         public ?LicenseAcknowledgement $acknowledgement = null,
+        public ?string $bomRef = null,
+        public ?Licensing $licensing = null,
+        /** @var Property[]|null */
+        public ?array $properties = null,
     ) {
     }
 
