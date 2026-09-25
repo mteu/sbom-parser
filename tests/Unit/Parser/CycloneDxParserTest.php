@@ -27,6 +27,7 @@ use mteu\SbomParser\Entity\Bom;
 use mteu\SbomParser\Entity\Component;
 use mteu\SbomParser\Entity\ComponentType;
 use mteu\SbomParser\Entity\Dependency;
+use mteu\SbomParser\Entity\OrganizationalContact;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
@@ -878,6 +879,42 @@ final class CycloneDxParserTest extends TestCase
             false,
             '',
         ];
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesMetadataAuthors(): void
+    {
+        $data = [
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'metadata' => [
+                'authors' => [
+                    [
+                        'name' => 'John Doe',
+                        'email' => 'foo@example.com',
+                        'phone' => '+49-30-000000',
+                    ],
+                    [
+                        'name' => 'Jane Doe',
+                    ],
+                ],
+            ],
+        ];
+
+        $bom = $this->subject->parseFromArray($data);
+        $authors = $bom->metadata->authors ?? [];
+
+        self::assertCount(2, $authors);
+
+        self::assertInstanceOf(OrganizationalContact::class, $authors[0]);
+        self::assertSame('John Doe', $authors[0]->name);
+        self::assertSame('foo@example.com', $authors[0]->email);
+        self::assertSame('+49-30-000000', $authors[0]->phone);
+
+        self::assertInstanceOf(OrganizationalContact::class, $authors[1]);
+        self::assertSame('Jane Doe', $authors[1]->name);
+        self::assertNull($authors[1]->email);
+        self::assertNull($authors[1]->phone);
     }
 
     #[Test]
