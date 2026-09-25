@@ -29,6 +29,7 @@ use mteu\SbomParser\Entity\Component;
 use mteu\SbomParser\Entity\ComponentType;
 use mteu\SbomParser\Entity\Dependency;
 use mteu\SbomParser\Entity\LicenseAcknowledgement;
+use mteu\SbomParser\Entity\LicenseType;
 use mteu\SbomParser\Entity\OrganizationalContact;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
@@ -761,6 +762,96 @@ final class CycloneDxParserTest extends TestCase
         self::assertCount(1, $licenses);
         self::assertNull($licenses[0]->license?->acknowledgement);
         self::assertNull($licenses[0]->acknowledgement);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesLicenseBomRefAndProperties(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'licensed-component',
+                    'licenses' => [
+                        [
+                            'license' => [
+                                'id' => 'MIT',
+                                'bom-ref' => 'license-mit',
+                                'properties' => [
+                                    ['name' => 'internal:reviewed', 'value' => 'true'],
+                                ],
+                            ],
+                            'bom-ref' => 'choice-mit',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $licenseChoice = ($bom->components[0]->licenses ?? [])[0];
+
+        self::assertSame('choice-mit', $licenseChoice->bomRef);
+        self::assertNotNull($licenseChoice->license);
+        self::assertSame('license-mit', $licenseChoice->license->bomRef);
+        self::assertNotNull($licenseChoice->license->properties);
+        self::assertCount(1, $licenseChoice->license->properties);
+        self::assertSame('internal:reviewed', $licenseChoice->license->properties[0]->name);
+        self::assertSame('true', $licenseChoice->license->properties[0]->value);
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesLicenseLicensing(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'licensed-component',
+                    'licenses' => [
+                        [
+                            'license' => [
+                                'name' => 'Commercial License',
+                                'licensing' => [
+                                    'altIds' => ['acme-ent', 'acme-enterprise'],
+                                    'licensor' => [
+                                        'organization' => ['name' => 'Acme Inc.'],
+                                    ],
+                                    'licensee' => [
+                                        'individual' => [
+                                            'name' => 'Jane Doe',
+                                            'email' => 'jane@example.com',
+                                        ],
+                                    ],
+                                    'purchaser' => [
+                                        'individual' => ['name' => 'John Doe'],
+                                    ],
+                                    'purchaseOrder' => 'PO-12345',
+                                    'licenseTypes' => ['subscription', 'named-user'],
+                                    'lastRenewal' => '2026-01-15T00:00:00Z',
+                                    'expiration' => '2027-01-15T00:00:00Z',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $licensing = (($bom->components[0]->licenses ?? [])[0]->license ?? null)?->licensing;
+
+        self::assertNotNull($licensing);
+        self::assertSame(['acme-ent', 'acme-enterprise'], $licensing->altIds);
+        self::assertSame('Acme Inc.', $licensing->licensor?->organization?->name);
+        self::assertSame('jane@example.com', $licensing->licensee?->individual?->email);
+        self::assertSame('John Doe', $licensing->purchaser?->individual?->name);
+        self::assertSame('PO-12345', $licensing->purchaseOrder);
+        self::assertSame([LicenseType::SUBSCRIPTION, LicenseType::NAMED_USER], $licensing->licenseTypes);
+        self::assertSame('2026-01-15', $licensing->lastRenewal?->format('Y-m-d'));
+        self::assertSame('2027-01-15', $licensing->expiration?->format('Y-m-d'));
     }
 
     /**
