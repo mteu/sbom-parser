@@ -24,25 +24,20 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Entity;
 
 /**
- * License based on CycloneDX 1.4+ specification.
+ * Licensing party based on CycloneDX 1.5 specification.
+ *
+ * Either an organization or an individual, as used by the licensor,
+ * licensee and purchaser of a license.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  * @codeCoverageIgnore
  */
-final readonly class License
+final readonly class LicensingParty
 {
     public function __construct(
-        public ?string $id = null,
-        public ?string $name = null,
-        public ?Attachment $text = null,
-        public ?string $url = null,
-        public ?LicenseAcknowledgement $acknowledgement = null,
-        public ?string $bomRef = null,
-        public ?Licensing $licensing = null,
-        /** @var Property[]|null */
-        public ?array $properties = null,
+        public ?OrganizationalEntity $organization = null,
+        public ?OrganizationalContact $individual = null,
     ) {
     }
-
 }
