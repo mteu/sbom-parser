@@ -24,6 +24,9 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Tests\Unit\Parser;
 
 use mteu\SbomParser\Entity\Bom;
+use mteu\SbomParser\Entity\Component;
+use mteu\SbomParser\Entity\ComponentType;
+use mteu\SbomParser\Entity\Dependency;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
@@ -660,6 +663,26 @@ final class CycloneDxParserTest extends TestCase
         self::assertSame($expectedVersion, $bom->specVersion);
     }
 
+    #[Test]
+    #[DataProvider('parseFromJsonFixtureProvider')]
+    public function parseFromFileMapsMetadataComponentAsTheRootComponent(string $fixturePath): void
+    {
+        $bom = $this->subject->parseFromFile($fixturePath);
+
+        $root = $bom->metadata?->component;
+        self::assertInstanceOf(Component::class, $root);
+        self::assertSame(ComponentType::APPLICATION, $root->type);
+        self::assertSame('mteu/sbom-parser-dev-main', $root->bomRef);
+        self::assertSame('pkg:composer/mteu/sbom-parser@dev-main', $root->purl);
+        self::assertSame('dev-main', $root->version);
+
+        $dependencyRefs = array_map(
+            static fn (Dependency $dependency): string => $dependency->ref,
+            $bom->dependencies ?? [],
+        );
+        self::assertContains($root->bomRef, $dependencyRefs);
+    }
+
     /** @return \Generator<string, array{string}> */
     public static function parseFromJsonFixtureProvider(): \Generator
     {
@@ -941,6 +964,33 @@ final class CycloneDxParserTest extends TestCase
         yield 'array with keys' => [['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4], 'array[4] with keys: a, b, c, ...'];
         yield 'object' => [new \stdClass(), 'object(stdClass)'];
         yield 'resource' => [tmpfile(), 'unknown'];
+    }
+
+    #[Test]
+    public function parseFromArrayHydratesHash(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.7',
+            'components' => [
+                [
+                    'type' => 'library',
+                    'name' => 'component',
+                    'hashes' => [
+                        [
+                            'alg' => 'SHA-256',
+                            'content' => 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $hashes = $bom->components[0]->hashes ?? [];
+
+        self::assertCount(1, $hashes);
+        self::assertSame('SHA-256', $hashes[0]->alg->value);
+        self::assertSame('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', $hashes[0]->content);
     }
 
     #[Test]
