@@ -35,6 +35,7 @@ final readonly class LicenseChoice
     public function __construct(
         public ?License $license = null,
         public ?string $expression = null,
+        public ?LicenseAcknowledgement $acknowledgement = null,
     ) {
     }
 
