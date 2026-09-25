@@ -35,7 +35,7 @@ final readonly class License
     public function __construct(
         public ?string $id = null,
         public ?string $name = null,
-        public ?string $text = null,
+        public ?Attachment $text = null,
         public ?string $url = null,
     ) {
     }
