@@ -24,29 +24,27 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Entity;
 
 /**
- * Metadata based on CycloneDX 1.4+ specification.
+ * Tools based on CycloneDX 1.5 specification.
+ *
+ * The specification models metadata.tools as a choice: either this
+ * object, listing the components and services that produced the BOM, or
+ * the pre-1.5 array of tool objects, which {@see self::$legacyTools}
+ * carries. The parser normalises the array form into that property, so
+ * both shapes are reachable without losing data.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  * @codeCoverageIgnore
  */
-final readonly class Metadata
+final readonly class Tools
 {
     public function __construct(
-        public ?\DateTimeImmutable $timestamp = null,
-        public ?Tools $tools = null,
-        /** @var OrganizationalContact[]|null */
-        public ?array $authors = null,
-        public ?Component $component = null,
-        public ?OrganizationalEntity $manufacture = null,
-        public ?OrganizationalEntity $supplier = null,
-        /** @var LifecyclePhase[]|null */
-        public ?array $lifecycles = null,
-        /** @var Property[]|null */
-        public ?array $properties = null,
-        /** @var list<LicenseChoice>|null */
-        public ?array $licenses = null,
+        /** @var Component[]|null */
+        public ?array $components = null,
+        /** @var Service[]|null */
+        public ?array $services = null,
+        /** @var Tool[]|null */
+        public ?array $legacyTools = null,
     ) {
     }
-
 }

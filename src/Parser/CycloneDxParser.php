@@ -81,6 +81,7 @@ final readonly class CycloneDxParser implements Parser
     {
         $this->validateDataStructure($data);
         $this->enforceNodeBudget($data);
+        $data = $this->normalizeLegacyTools($data);
 
         try {
             return $this->mapper->map(Bom::class, $data);
@@ -90,6 +91,39 @@ final readonly class CycloneDxParser implements Parser
                 $e,
             );
         }
+    }
+
+    /**
+     * The specification models metadata.tools as a choice between the
+     * 1.5 object, keyed by `components` and `services`, and the earlier
+     * array of tool objects. Both shapes are arrays once decoded, and
+     * the mapper is configured to allow superfluous keys, so it cannot
+     * tell them apart: it would match the array form against {@see Tools}
+     * and silently discard every entry.
+     *
+     * Moving the array form under a dedicated key resolves the choice
+     * before mapping, leaving {@see Tools} unambiguous.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    private function normalizeLegacyTools(array $data): array
+    {
+        if (!is_array($data['metadata'] ?? null)) {
+            return $data;
+        }
+
+        $metadata = $data['metadata'];
+        $tools = $metadata['tools'] ?? null;
+
+        if (!is_array($tools) || !array_is_list($tools)) {
+            return $data;
+        }
+
+        $metadata['tools'] = ['legacyTools' => $tools];
+        $data['metadata'] = $metadata;
+
+        return $data;
     }
 
     /**
