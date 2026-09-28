@@ -1471,6 +1471,106 @@ final class CycloneDxParserTest extends TestCase
     }
 
     #[Test]
+    public function parseFromFileHydratesBomRefOnOrganizationalEntitiesContactsAndCompositions(): void
+    {
+        $bom = $this->parseHandAuthoredFixture();
+
+        $manufacturer = $bom->metadata?->manufacturer;
+        self::assertNotNull($manufacturer);
+        self::assertSame('org-acme', $manufacturer->bomRef);
+
+        $contacts = $manufacturer->contact ?? [];
+        self::assertCount(1, $contacts);
+        self::assertSame('contact-jane', $contacts[0]->bomRef);
+
+        $compositions = $bom->compositions ?? [];
+        self::assertCount(1, $compositions);
+        self::assertSame('composition-complete', $compositions[0]->bomRef);
+    }
+
+    #[Test]
+    public function parseFromFileHydratesComponentAndServiceTagsAndServiceTrustZone(): void
+    {
+        $bom = $this->parseHandAuthoredFixture();
+
+        $components = $bom->components ?? [];
+        self::assertCount(1, $components);
+        self::assertSame(['php', 'parser'], $components[0]->tags);
+
+        $services = $bom->services ?? [];
+        self::assertCount(1, $services);
+        self::assertSame(['api', 'billing'], $services[0]->tags);
+        self::assertSame('public', $services[0]->trustZone);
+    }
+
+    #[Test]
+    public function parseFromFileHydratesComponentProvenanceAndMetadataManufacturer(): void
+    {
+        $bom = $this->parseHandAuthoredFixture();
+
+        self::assertSame('Acme Corporation', $bom->metadata?->manufacturer?->name);
+
+        $components = $bom->components ?? [];
+        self::assertCount(1, $components);
+        $component = $components[0];
+
+        self::assertSame('Acme Manufacturing', $component->manufacturer?->name);
+
+        $authors = $component->authors ?? [];
+        self::assertCount(1, $authors);
+        self::assertSame('John Roe', $authors[0]->name);
+        self::assertSame('john@acme.example', $authors[0]->email);
+        self::assertSame('author-john', $authors[0]->bomRef);
+
+        self::assertSame(['gitoid:blob:sha1:261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64'], $component->omniborId);
+        self::assertSame(['swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2'], $component->swhid);
+        self::assertSame(
+            ['algorithm' => 'ES256', 'value' => 'c2lnbmF0dXJlLXZhbHVl'],
+            $component->signature?->signatureData,
+        );
+    }
+
+    #[Test]
+    public function parseFromFileHydratesDependencyProvidesCompositionVulnerabilitiesAndReferenceHashes(): void
+    {
+        $bom = $this->parseHandAuthoredFixture();
+
+        $dependencies = $bom->dependencies ?? [];
+        self::assertCount(1, $dependencies);
+        self::assertSame(['service-billing'], $dependencies[0]->provides);
+
+        $compositions = $bom->compositions ?? [];
+        self::assertCount(1, $compositions);
+        self::assertSame(['vuln-1'], $compositions[0]->vulnerabilities);
+
+        $components = $bom->components ?? [];
+        self::assertCount(1, $components);
+        $externalReferences = $components[0]->externalReferences ?? [];
+        self::assertCount(1, $externalReferences);
+
+        $hashes = $externalReferences[0]->hashes ?? [];
+        self::assertCount(1, $hashes);
+        self::assertSame(HashAlgorithm::SHA256, $hashes[0]->alg);
+        self::assertSame('2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae', $hashes[0]->content);
+    }
+
+    #[Test]
+    public function parseFromFileHydratesVulnerabilityWorkaroundAndRejectionTimestamp(): void
+    {
+        $bom = $this->parseHandAuthoredFixture();
+
+        $vulnerabilities = $bom->vulnerabilities ?? [];
+        self::assertCount(1, $vulnerabilities);
+        self::assertSame('Disable the affected feature flag.', $vulnerabilities[0]->workaround);
+        self::assertSame('2026-03-01T10:00:00+00:00', $vulnerabilities[0]->rejected?->format(\DateTimeInterface::ATOM));
+    }
+
+    private function parseHandAuthoredFixture(): Bom
+    {
+        return $this->subject->parseFromFile(self::fixtureDir() . '/bom-1.6-custom.json');
+    }
+
+    #[Test]
     #[DataProvider('isValidSbomFileProvider')]
     public function isValidSbomFile(string $filePath, bool $expected): void
     {

@@ -64,6 +64,16 @@ final readonly class Component
         /** @var PatentAssertion[]|null */
         public ?array $patentAssertions = null,
         public ?CryptoProperties $cryptoProperties = null,
+        public ?OrganizationalEntity $manufacturer = null,
+        /** @var OrganizationalContact[]|null */
+        public ?array $authors = null,
+        /** @var string[]|null */
+        public ?array $omniborId = null,
+        /** @var string[]|null */
+        public ?array $swhid = null,
+        /** @var string[]|null */
+        public ?array $tags = null,
+        public ?Signature $signature = null,
     ) {
     }
 

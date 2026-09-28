@@ -40,6 +40,9 @@ final readonly class Compositions
         public ?array $dependencies = null,
         /** @var array<string, string|int|bool|array<string, string>>|string|null Digital signature */
         public array|string|null $signature = null,
+        public ?string $bomRef = null,
+        /** @var string[]|null */
+        public ?array $vulnerabilities = null,
     ) {
     }
 

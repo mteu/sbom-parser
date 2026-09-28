@@ -68,6 +68,8 @@ $component->type;               // ComponentType enum
 $component->purl;               // PURL if available
 $component->licenses ?? [];     // Array of LicenseChoice objects
 $component->hashes ?? [];       // Array of Hash objects
+$component->authors ?? [];      // Array of OrganizationalContact objects (1.6+)
+$component->tags ?? [];         // Array of tag strings (1.6+)
 $component->components ?? [];   // Nested components
 $component->hasComponents();    // Check if has nested components
 ```

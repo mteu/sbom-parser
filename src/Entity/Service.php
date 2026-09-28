@@ -58,6 +58,9 @@ final readonly class Service
         public array|string|null $signature = null,
         /** @var PatentAssertion[]|null */
         public ?array $patentAssertions = null,
+        public ?string $trustZone = null,
+        /** @var string[]|null */
+        public ?array $tags = null,
     ) {
     }
 

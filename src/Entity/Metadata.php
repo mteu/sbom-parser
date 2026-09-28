@@ -46,6 +46,7 @@ final readonly class Metadata
         public ?array $properties = null,
         /** @var list<LicenseChoice>|null */
         public ?array $licenses = null,
+        public ?OrganizationalEntity $manufacturer = null,
     ) {
     }
 

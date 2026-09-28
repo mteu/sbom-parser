@@ -38,6 +38,7 @@ final readonly class OrganizationalEntity
         public ?array $url = null,
         /** @var OrganizationalContact[]|null */
         public ?array $contact = null,
+        public ?string $bomRef = null,
     ) {
     }
 }
