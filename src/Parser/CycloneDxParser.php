@@ -44,6 +44,12 @@ final readonly class CycloneDxParser implements Parser
 
     private const int JSON_MAX_DEPTH = 64;
 
+    private const array SCHEMA_KEY_ALIASES = [
+        'bom-ref' => 'bomRef',
+        'mime-type' => 'mimeType',
+        'x-trust-boundary' => 'xTrustBoundary',
+    ];
+
     private TreeMapper $mapper;
 
     public function __construct(
@@ -52,7 +58,7 @@ final readonly class CycloneDxParser implements Parser
         $this->mapper = (new MapperBuilder())
             ->supportDateFormats('Y-m-d\TH:i:s.u\Z', 'Y-m-d\TH:i:s\Z', \DateTimeImmutable::ATOM)
             ->registerKeyConverter(
-                static fn (string $key): string => $key === 'bom-ref' ? 'bomRef' : $key,
+                static fn (string $key): string => self::SCHEMA_KEY_ALIASES[$key] ?? $key,
             )
             ->allowSuperfluousKeys()
             ->mapper();

@@ -619,6 +619,45 @@ final class CycloneDxParserTest extends TestCase
     }
 
     #[Test]
+    public function parseFromArrayMapsComponentMimeTypeKey(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [
+                [
+                    'type' => 'file',
+                    'name' => 'README.md',
+                    'mime-type' => 'text/markdown',
+                ],
+            ],
+        ]);
+
+        $components = $bom->components ?? [];
+        self::assertCount(1, $components);
+        self::assertSame('text/markdown', $components[0]->mimeType);
+    }
+
+    #[Test]
+    public function parseFromArrayMapsServiceTrustBoundaryKey(): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'services' => [
+                [
+                    'name' => 'billing-api',
+                    'x-trust-boundary' => true,
+                ],
+            ],
+        ]);
+
+        $services = $bom->services ?? [];
+        self::assertCount(1, $services);
+        self::assertTrue($services[0]->xTrustBoundary);
+    }
+
+    #[Test]
     public function parseFromArrayHydratesLicenseChoices(): void
     {
         $bom = $this->subject->parseFromArray([
