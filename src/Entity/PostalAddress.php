@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of the package "mteu/sbom-parser".
  *
- * Copyright (C) 2025 Martin Adler <mteu@mailbox.org>
+ * Copyright (C) 2026 Martin Adler <mteu@mailbox.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,22 +24,22 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Entity;
 
 /**
- * OrganizationalEntity based on CycloneDX 1.4+ specification.
+ * Postal address based on CycloneDX 1.6 specification.
  *
  * @author Martin Adler <mteu@mailbox.org>
  * @license GPL-3.0-or-later
  * @codeCoverageIgnore
  */
-final readonly class OrganizationalEntity
+final readonly class PostalAddress
 {
     public function __construct(
-        public ?string $name = null,
-        /** @var string[]|null */
-        public ?array $url = null,
-        /** @var OrganizationalContact[]|null */
-        public ?array $contact = null,
         public ?string $bomRef = null,
-        public ?PostalAddress $address = null,
+        public ?string $country = null,
+        public ?string $region = null,
+        public ?string $locality = null,
+        public ?string $postOfficeBoxNumber = null,
+        public ?string $postalCode = null,
+        public ?string $streetAddress = null,
     ) {
     }
 }
