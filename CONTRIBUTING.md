@@ -55,3 +55,8 @@ When you model a field, delete its `KNOWN_UNMODELLED` line; the test fails
 until you do. Hyphenated keys (`bom-ref`, `mime-type`, `x-trust-boundary`)
 are converted by `CycloneDxParser::SCHEMA_KEY_ALIASES`. New entity classes
 must be added to `SCHEMA_POINTERS`.
+
+The schemas in `tests/Fixtures/schemas` are official CycloneDX files pinned
+to one specification release. `composer schemas:check` verifies them (CI
+runs it); `composer schemas:update` refreshes them. See the README in that
+directory.
