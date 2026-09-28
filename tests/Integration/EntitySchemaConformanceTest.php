@@ -89,6 +89,7 @@ final class EntitySchemaConformanceTest extends TestCase
         Entity\OrganizationalEntity::class => ['/definitions/organizationalEntity'],
         Entity\Patch::class => ['/definitions/patch'],
         Entity\PatentAssertion::class => ['/definitions/patentAssertions'],
+        Entity\PostalAddress::class => ['/definitions/postalAddress'],
         Entity\Pedigree::class => ['/definitions/component/properties/pedigree'],
         Entity\Property::class => ['/definitions/property'],
         Entity\ReleaseNotes::class => ['/definitions/releaseNotes'],
@@ -106,6 +107,7 @@ final class EntitySchemaConformanceTest extends TestCase
         Vulnerability\VulnerabilityAffects::class => ['/definitions/vulnerability/properties/affects'],
         Vulnerability\VulnerabilityAnalysis::class => ['/definitions/vulnerability/properties/analysis'],
         Vulnerability\VulnerabilityCredit::class => ['/definitions/vulnerability/properties/credits'],
+        Vulnerability\ProofOfConcept::class => ['/definitions/vulnerability/properties/proofOfConcept'],
         Vulnerability\VulnerabilityRating::class => ['/definitions/rating'],
         Vulnerability\VulnerabilityReference::class => ['/definitions/vulnerability/properties/references'],
         Vulnerability\VulnerabilitySource::class => ['/definitions/vulnerabilitySource'],
@@ -176,12 +178,6 @@ final class EntitySchemaConformanceTest extends TestCase
         ],
         Entity\Metadata::class => [
             'distributionConstraints' => 'untracked',
-        ],
-        Entity\OrganizationalEntity::class => [
-            'address' => '#58',
-        ],
-        Vulnerability\Vulnerability::class => [
-            'proofOfConcept' => '#58',
         ],
     ];
 

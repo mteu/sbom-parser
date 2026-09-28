@@ -9,6 +9,15 @@
 		"manufacturer": {
 			"bom-ref": "org-acme",
 			"name": "Acme Corporation",
+			"address": {
+				"bom-ref": "address-acme-hq",
+				"country": "DE",
+				"region": "Berlin",
+				"locality": "Berlin",
+				"postOfficeBoxNumber": "1234",
+				"postalCode": "10115",
+				"streetAddress": "Invalidenstraße 1"
+			},
 			"url": [
 				"https://acme.example"
 			],
@@ -123,6 +132,16 @@
 			"id": "CVE-2026-0001",
 			"workaround": "Disable the affected feature flag.",
 			"rejected": "2026-03-01T10:00:00Z",
+			"proofOfConcept": {
+				"reproductionSteps": "Send a crafted SBOM to the upload endpoint.",
+				"environment": "PHP 8.4 on Linux",
+				"supportingMaterial": [
+					{
+						"contentType": "text/plain",
+						"content": "curl -X POST ..."
+					}
+				]
+			},
 			"affects": [
 				{
 					"ref": "pkg:composer/acme/hashed@1.0.0"

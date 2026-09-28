@@ -1565,6 +1565,41 @@ final class CycloneDxParserTest extends TestCase
         self::assertSame('2026-03-01T10:00:00+00:00', $vulnerabilities[0]->rejected?->format(\DateTimeInterface::ATOM));
     }
 
+    #[Test]
+    public function parseFromFileHydratesOrganizationalEntityPostalAddress(): void
+    {
+        $bom = $this->parseHandAuthoredFixture();
+
+        $address = $bom->metadata?->manufacturer?->address;
+        self::assertNotNull($address);
+        self::assertSame('address-acme-hq', $address->bomRef);
+        self::assertSame('DE', $address->country);
+        self::assertSame('Berlin', $address->region);
+        self::assertSame('Berlin', $address->locality);
+        self::assertSame('1234', $address->postOfficeBoxNumber);
+        self::assertSame('10115', $address->postalCode);
+        self::assertSame('Invalidenstraße 1', $address->streetAddress);
+    }
+
+    #[Test]
+    public function parseFromFileHydratesVulnerabilityProofOfConceptWithSupportingMaterial(): void
+    {
+        $bom = $this->parseHandAuthoredFixture();
+
+        $vulnerabilities = $bom->vulnerabilities ?? [];
+        self::assertCount(1, $vulnerabilities);
+
+        $proofOfConcept = $vulnerabilities[0]->proofOfConcept;
+        self::assertNotNull($proofOfConcept);
+        self::assertSame('Send a crafted SBOM to the upload endpoint.', $proofOfConcept->reproductionSteps);
+        self::assertSame('PHP 8.4 on Linux', $proofOfConcept->environment);
+
+        $supportingMaterial = $proofOfConcept->supportingMaterial ?? [];
+        self::assertCount(1, $supportingMaterial);
+        self::assertSame('text/plain', $supportingMaterial[0]->contentType);
+        self::assertSame('curl -X POST ...', $supportingMaterial[0]->content);
+    }
+
     private function parseHandAuthoredFixture(): Bom
     {
         return $this->subject->parseFromFile(self::fixtureDir() . '/bom-1.6-custom.json');
