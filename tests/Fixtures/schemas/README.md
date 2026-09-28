@@ -9,7 +9,12 @@ Do not edit these files by hand. Use:
 ```bash
 composer schemas:check    # fails if a local file differs from the pinned upstream file
 composer schemas:update   # downloads the pinned files and overwrites the local copies
+composer schemas:check-latest  # fails if a newer upstream release changes a file or adds a spec version
 ```
+
+The `Schemas` workflow runs `schemas:check-latest` on the 1st and 15th of
+each month and on demand. A failed run means upstream moved; its job
+summary lists the changed files and the exact pin to set.
 
 To move to a newer specification release, bump `SPECIFICATION_TAG` and
 `SPECIFICATION_COMMIT` in `tests/Build/schemas.php` together, then run
