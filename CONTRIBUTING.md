@@ -38,3 +38,20 @@ Run specific tests:
 phpunit -c phpunit.unit.xml tests/Unit/Entity/BomTest.php
 phpunit -c phpunit.unit.xml --filter testMethodName
 ```
+
+## Entity/schema conformance
+
+Entity constructors are the schema binding: the parser maps JSON keys onto
+constructor parameters by name and silently ignores keys it cannot place.
+`tests/Integration/EntitySchemaConformanceTest.php` compares every entity
+against the bundled CycloneDX schemas (1.4 to 1.7) in both directions:
+
+- every schema property needs a matching parameter, or an entry in
+  `KNOWN_UNMODELLED` naming its tracking issue;
+- every parameter needs a matching schema key, so a misspelt name fails
+  instead of staying `null` forever.
+
+When you model a field, delete its `KNOWN_UNMODELLED` line; the test fails
+until you do. Hyphenated keys (`bom-ref`, `mime-type`, `x-trust-boundary`)
+are converted by `CycloneDxParser::SCHEMA_KEY_ALIASES`. New entity classes
+must be added to `SCHEMA_POINTERS`.
