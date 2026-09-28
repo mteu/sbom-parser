@@ -4,6 +4,23 @@
 	"specVersion": "1.6",
 	"serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
 	"version": 1,
+	"metadata": {
+		"timestamp": "2026-09-26T12:00:00Z",
+		"manufacturer": {
+			"bom-ref": "org-acme",
+			"name": "Acme Corporation",
+			"url": [
+				"https://acme.example"
+			],
+			"contact": [
+				{
+					"bom-ref": "contact-jane",
+					"name": "Jane Doe",
+					"email": "jane@acme.example"
+				}
+			]
+		}
+	},
 	"components": [
 		{
 			"type": "library",
@@ -28,6 +45,87 @@
 				{
 					"alg": "BLAKE3",
 					"content": "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"
+				}
+			],
+			"manufacturer": {
+				"name": "Acme Manufacturing"
+			},
+			"authors": [
+				{
+					"bom-ref": "author-john",
+					"name": "John Roe",
+					"email": "john@acme.example"
+				}
+			],
+			"omniborId": [
+				"gitoid:blob:sha1:261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64"
+			],
+			"swhid": [
+				"swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
+			],
+			"tags": [
+				"php",
+				"parser"
+			],
+			"externalReferences": [
+				{
+					"type": "distribution",
+					"url": "https://acme.example/dist/hashed-1.0.0.zip",
+					"hashes": [
+						{
+							"alg": "SHA-256",
+							"content": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+						}
+					]
+				}
+			],
+			"signature": {
+				"algorithm": "ES256",
+				"value": "c2lnbmF0dXJlLXZhbHVl"
+			}
+		}
+	],
+	"services": [
+		{
+			"bom-ref": "service-billing",
+			"name": "billing-api",
+			"trustZone": "public",
+			"tags": [
+				"api",
+				"billing"
+			]
+		}
+	],
+	"dependencies": [
+		{
+			"ref": "pkg:composer/acme/hashed@1.0.0",
+			"dependsOn": [],
+			"provides": [
+				"service-billing"
+			]
+		}
+	],
+	"compositions": [
+		{
+			"bom-ref": "composition-complete",
+			"aggregate": "complete",
+			"assemblies": [
+				"pkg:composer/acme/hashed@1.0.0"
+			],
+			"vulnerabilities": [
+				"vuln-1"
+			]
+		}
+	],
+	"vulnerabilities": [
+		{
+			"bom-ref": "vuln-1",
+			"id": "CVE-2026-0001",
+			"workaround": "Disable the affected feature flag.",
+			"rejected": "2026-03-01T10:00:00Z",
+			"affects": [
+				{
+					"ref": "pkg:composer/acme/hashed@1.0.0"
 				}
 			]
 		}

@@ -36,6 +36,7 @@ final readonly class OrganizationalContact
         public ?string $name = null,
         public ?string $email = null,
         public ?string $phone = null,
+        public ?string $bomRef = null,
     ) {
     }
 }

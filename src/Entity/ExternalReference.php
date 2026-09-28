@@ -36,6 +36,8 @@ final readonly class ExternalReference
         public ExternalReferenceType $type,
         public string $url,
         public ?string $comment = null,
+        /** @var Hash[]|null */
+        public ?array $hashes = null,
     ) {
     }
 }

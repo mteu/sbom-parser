@@ -143,12 +143,6 @@ final class EntitySchemaConformanceTest extends TestCase
             'signature' => 'untracked',
         ],
         Entity\Component::class => [
-            'manufacturer' => '#57',
-            'authors' => '#57',
-            'omniborId' => '#57',
-            'swhid' => '#57',
-            'tags' => '#57',
-            'signature' => '#57',
             'modelCard' => '#59',
             'data' => '#59',
             'versionRange' => 'untracked',
@@ -158,10 +152,6 @@ final class EntitySchemaConformanceTest extends TestCase
             'identity' => '#59',
             'occurrences' => '#59',
             'callstack' => '#59',
-        ],
-        Entity\Compositions::class => [
-            'bomRef' => '#57',
-            'vulnerabilities' => '#57',
         ],
         Entity\CryptoProperties::class => [
             'certificateProperties' => 'untracked',
@@ -176,11 +166,7 @@ final class EntitySchemaConformanceTest extends TestCase
             'source' => 'untracked, serviceData since 1.5',
             'destination' => 'untracked, serviceData since 1.5',
         ],
-        Entity\Dependency::class => [
-            'provides' => '#57',
-        ],
         Entity\ExternalReference::class => [
-            'hashes' => '#57',
             'properties' => 'untracked',
         ],
         Entity\LicenseChoice::class => [
@@ -189,23 +175,12 @@ final class EntitySchemaConformanceTest extends TestCase
             'properties' => 'untracked',
         ],
         Entity\Metadata::class => [
-            'manufacturer' => '#57',
             'distributionConstraints' => 'untracked',
         ],
-        Entity\OrganizationalContact::class => [
-            'bomRef' => '#57',
-        ],
         Entity\OrganizationalEntity::class => [
-            'bomRef' => '#57',
             'address' => '#58',
         ],
-        Entity\Service::class => [
-            'trustZone' => '#57',
-            'tags' => '#57',
-        ],
         Vulnerability\Vulnerability::class => [
-            'workaround' => '#57',
-            'rejected' => '#57',
             'proofOfConcept' => '#58',
         ],
     ];

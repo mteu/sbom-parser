@@ -36,6 +36,8 @@ final readonly class Dependency
         public string $ref,
         /** @var string[]|null */
         public ?array $dependsOn = null,
+        /** @var string[]|null */
+        public ?array $provides = null,
     ) {
     }
 
