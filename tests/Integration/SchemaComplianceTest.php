@@ -45,6 +45,7 @@ final class SchemaComplianceTest extends TestCase
         yield '1.5 fixture validates against 1.5 schema' => ['bom-1.5.schema.json', 'bom-1.5.json'];
         yield '1.6 fixture validates against 1.6 schema' => ['bom-1.6.schema.json', 'bom-1.6.json'];
         yield '1.7 fixture validates against 1.7 schema' => ['bom-1.7.schema.json', 'bom-1.7.json'];
+        yield 'hand-authored 1.6 fixture validates against 1.6 schema' => ['bom-1.6.schema.json', 'bom-1.6-custom.json'];
     }
 
     #[Test]

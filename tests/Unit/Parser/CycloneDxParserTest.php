@@ -28,6 +28,8 @@ use mteu\SbomParser\Entity\Bom;
 use mteu\SbomParser\Entity\Component;
 use mteu\SbomParser\Entity\ComponentType;
 use mteu\SbomParser\Entity\Dependency;
+use mteu\SbomParser\Entity\Hash;
+use mteu\SbomParser\Entity\HashAlgorithm;
 use mteu\SbomParser\Entity\LicenseAcknowledgement;
 use mteu\SbomParser\Entity\LicenseType;
 use mteu\SbomParser\Entity\OrganizationalContact;
@@ -1449,6 +1451,23 @@ final class CycloneDxParserTest extends TestCase
         self::assertCount(1, $hashes);
         self::assertSame('SHA-256', $hashes[0]->alg->value);
         self::assertSame('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', $hashes[0]->content);
+    }
+
+    #[Test]
+    public function parseFromFileHydratesHashesFromHandAuthoredFixture(): void
+    {
+        $bom = $this->subject->parseFromFile(self::fixtureDir() . '/bom-1.6-custom.json');
+
+        $components = $bom->components ?? [];
+        self::assertCount(1, $components);
+
+        $hashes = $components[0]->hashes ?? [];
+        self::assertCount(4, $hashes);
+        self::assertSame(
+            [HashAlgorithm::SHA1, HashAlgorithm::SHA256, HashAlgorithm::SHA512, HashAlgorithm::BLAKE3],
+            array_map(static fn (Hash $hash): HashAlgorithm => $hash->alg, $hashes),
+        );
+        self::assertSame('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', $hashes[1]->content);
     }
 
     #[Test]
