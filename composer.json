@@ -59,6 +59,7 @@
         "lint": "@cgl lint",
         "sca": "@cgl sca",
         "schemas:check": "@php tests/Build/schemas.php check",
+        "schemas:check-latest": "@php tests/Build/schemas.php check-latest",
         "schemas:update": "@php tests/Build/schemas.php update",
         "test": [
             "@test:unit",

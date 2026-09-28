@@ -1,0 +1,29 @@
+name: Schemas
+on:
+  # GitHub cron has no "every two weeks"; the 1st and 15th of each month is the closest fixed schedule.
+  schedule:
+    - cron: '23 4 1,15 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upstream:
+    name: Compare pinned schemas with latest CycloneDX release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: 8.5
+          tools: none
+          coverage: none
+
+      - name: Verify local schemas match the pinned release
+        run: php tests/Build/schemas.php check
+
+      - name: Compare pinned release with latest upstream release
+        run: php tests/Build/schemas.php check-latest
