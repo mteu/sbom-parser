@@ -34,6 +34,10 @@ jobs:
       - name: Install Composer dependencies
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
 
+      # Schemas
+      - name: Verify schemas match official CycloneDX release
+        run: composer schemas:check
+
       # Analyze
       - name: Analyze dependencies
         run: composer cgl analyze:dependencies
