@@ -97,6 +97,33 @@ foreach ($component->licenses ?? [] as $licenseChoice) {
 The same shape applies to `Service::$licenses` and
 `ComponentEvidence::$licenses`.
 
+### Vulnerability Analysis: [`VulnerabilityAnalysis`](../src/Entity/Vulnerability/VulnerabilityAnalysis.php)
+
+A VEX document records its verdict in `vulnerabilities[].analysis`. The
+`state`, `justification` and `response` fields are enums.
+
+```php
+use mteu\SbomParser\Entity\Vulnerability\ImpactAnalysisState;
+
+foreach ($bom->vulnerabilities ?? [] as $vulnerability) {
+    $analysis = $vulnerability->analysis;
+
+    if ($analysis?->state === ImpactAnalysisState::NOT_AFFECTED) {
+        $analysis->justification;      // ImpactAnalysisJustification, e.g. CODE_NOT_REACHABLE
+    }
+
+    $analysis?->response;              // list<ImpactAnalysisResponse>, e.g. [UPDATE]
+    $analysis?->detail;                // Free text written by a person: escape it before display
+}
+```
+
+The vocabulary is the same in every supported spec version. A value outside
+it fails the parse with an `SbomParseException` whose message names the path,
+such as `vulnerabilities.2.analysis.state`.
+
+A VEX document may carry no `components` at all. It parses like any other
+document, and `Bom::hasComponents()` returns `false`.
+
 ## File Validation
 
 The parser includes validation:

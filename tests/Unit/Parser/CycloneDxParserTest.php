@@ -33,7 +33,13 @@ use mteu\SbomParser\Entity\HashAlgorithm;
 use mteu\SbomParser\Entity\LicenseAcknowledgement;
 use mteu\SbomParser\Entity\LicenseType;
 use mteu\SbomParser\Entity\OrganizationalContact;
+use mteu\SbomParser\Entity\Property;
 use mteu\SbomParser\Entity\Tool;
+use mteu\SbomParser\Entity\Vulnerability\ImpactAnalysisJustification;
+use mteu\SbomParser\Entity\Vulnerability\ImpactAnalysisResponse;
+use mteu\SbomParser\Entity\Vulnerability\ImpactAnalysisState;
+use mteu\SbomParser\Entity\Vulnerability\Vulnerability;
+use mteu\SbomParser\Entity\Vulnerability\VulnerabilityAffects;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
@@ -1603,6 +1609,166 @@ final class CycloneDxParserTest extends TestCase
     private function parseHandAuthoredFixture(): Bom
     {
         return $this->subject->parseFromFile(self::fixtureDir() . '/bom-1.6-custom.json');
+    }
+
+    #[Test]
+    public function parseFromFileTypesTheAnalysisOfAVexDocument(): void
+    {
+        $vulnerabilities = $this->parseVexFixture()->vulnerabilities ?? [];
+        self::assertCount(6, $vulnerabilities);
+
+        self::assertSame(
+            [
+                ImpactAnalysisState::NOT_AFFECTED,
+                ImpactAnalysisState::EXPLOITABLE,
+                ImpactAnalysisState::RESOLVED,
+                ImpactAnalysisState::FALSE_POSITIVE,
+                ImpactAnalysisState::IN_TRIAGE,
+                ImpactAnalysisState::NOT_AFFECTED,
+            ],
+            array_map(static fn (Vulnerability $vulnerability): ?ImpactAnalysisState => $vulnerability->analysis?->state, $vulnerabilities),
+        );
+
+        $notAffected = $vulnerabilities[0]->analysis;
+        self::assertNotNull($notAffected);
+        self::assertSame(ImpactAnalysisJustification::CODE_NOT_REACHABLE, $notAffected->justification);
+        self::assertNull($notAffected->response);
+        self::assertSame('Fragments are never rendered, so the vulnerable path is never called.', $notAffected->detail);
+        self::assertSame('2026-10-01T09:15:00+00:00', $notAffected->firstIssued?->format(\DateTimeInterface::ATOM));
+        self::assertSame('2026-10-01T09:15:00+00:00', $notAffected->lastUpdated?->format(\DateTimeInterface::ATOM));
+
+        self::assertSame([ImpactAnalysisResponse::UPDATE], $vulnerabilities[1]->analysis?->response);
+    }
+
+    #[Test]
+    public function parseFromFileKeepsEveryEntryOfAVulnerabilityIdThatHitsTwoComponents(): void
+    {
+        $vulnerabilities = array_values(array_filter(
+            $this->parseVexFixture()->vulnerabilities ?? [],
+            static fn (Vulnerability $vulnerability): bool => $vulnerability->id === 'CVE-2026-1234',
+        ));
+
+        self::assertCount(2, $vulnerabilities);
+        self::assertSame(
+            [
+                ['pkg:composer/symfony/http-kernel@5.4.19'],
+                ['pkg:composer/symfony/http-kernel@6.4.2'],
+            ],
+            array_map(
+                static fn (Vulnerability $vulnerability): array => array_map(
+                    static fn (VulnerabilityAffects $affects): string => $affects->ref,
+                    $vulnerability->affects ?? [],
+                ),
+                $vulnerabilities,
+            ),
+        );
+        self::assertNotSame($vulnerabilities[0]->analysis?->state, $vulnerabilities[1]->analysis?->state);
+    }
+
+    #[Test]
+    public function parseFromFileKeepsTheReferencesAndPropertiesOfAVexDocument(): void
+    {
+        $bom = $this->parseVexFixture();
+        $vulnerabilities = $bom->vulnerabilities ?? [];
+
+        self::assertNull($bom->serialNumber);
+        self::assertSame('NVD', $vulnerabilities[0]->source?->name);
+        self::assertSame('GHSA-jfh8-c2jp-5v3q', ($vulnerabilities[0]->references ?? [])[0]->id ?? null);
+
+        self::assertSame(
+            [['mteu:vex:justification', 'component_not_present']],
+            array_map(
+                static fn (Property $property): array => [$property->name, $property->value],
+                $vulnerabilities[5]->properties ?? [],
+            ),
+        );
+        self::assertSame(ImpactAnalysisJustification::CODE_NOT_PRESENT, $vulnerabilities[5]->analysis?->justification);
+    }
+
+    #[Test]
+    public function parseFromFileFindsTheComponentsAVexDocumentRepeatsByPurl(): void
+    {
+        $bom = $this->parseVexFixture();
+
+        self::assertCount(5, $bom->components ?? []);
+        self::assertSame('http-kernel', $bom->findComponentByPurl('pkg:composer/symfony/http-kernel@6.4.2')?->name);
+    }
+
+    #[Test]
+    public function parseFromFileReadsAVexDocumentWithoutComponents(): void
+    {
+        $bom = $this->subject->parseFromFile(self::fixtureDir() . '/vex-1.6-without-components.json');
+
+        self::assertFalse($bom->hasComponents());
+        self::assertSame([], $bom->getAllComponents());
+        self::assertSame(ImpactAnalysisState::IN_TRIAGE, ($bom->vulnerabilities ?? [])[0]->analysis?->state);
+    }
+
+    /**
+     * @return \Generator<string, array{array<string, mixed>, string}>
+     */
+    public static function unknownAnalysisValueProvider(): \Generator
+    {
+        yield 'state' => [['state' => 'resolved_with_hope'], 'vulnerabilities.1.analysis.state'];
+        yield 'justification' => [['state' => 'not_affected', 'justification' => 'nobody_uses_it'], 'vulnerabilities.1.analysis.justification'];
+        yield 'one of several responses' => [['state' => 'exploitable', 'response' => ['update', 'teleport']], 'vulnerabilities.1.analysis.response.1'];
+    }
+
+    /**
+     * @param array<string, mixed> $analysis
+     */
+    #[Test]
+    #[DataProvider('unknownAnalysisValueProvider')]
+    public function parseFromArrayRejectsAnAnalysisValueOutsideTheVocabularyAndNamesItsPath(array $analysis, string $expectedPath): void
+    {
+        $this->expectException(SbomParseException::class);
+        $this->expectExceptionMessage('Error at path: ' . $expectedPath);
+
+        $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'vulnerabilities' => [
+                ['id' => 'CVE-2026-0001', 'analysis' => ['state' => 'in_triage']],
+                ['id' => 'CVE-2026-0002', 'analysis' => $analysis],
+            ],
+        ]);
+    }
+
+    /**
+     * @return \Generator<string, array{array<string, mixed>}>
+     */
+    public static function everyAnalysisValueProvider(): \Generator
+    {
+        foreach (ImpactAnalysisState::cases() as $state) {
+            yield 'state ' . $state->value => [['state' => $state->value]];
+        }
+        foreach (ImpactAnalysisJustification::cases() as $justification) {
+            yield 'justification ' . $justification->value => [['state' => 'not_affected', 'justification' => $justification->value]];
+        }
+        foreach (ImpactAnalysisResponse::cases() as $response) {
+            yield 'response ' . $response->value => [['state' => 'exploitable', 'response' => [$response->value]]];
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $analysis
+     */
+    #[Test]
+    #[DataProvider('everyAnalysisValueProvider')]
+    public function parseFromArrayAcceptsEveryAnalysisValueOfTheVocabulary(array $analysis): void
+    {
+        $bom = $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'vulnerabilities' => [['id' => 'CVE-2026-0001', 'analysis' => $analysis]],
+        ]);
+
+        self::assertNotNull(($bom->vulnerabilities ?? [])[0]->analysis?->state);
+    }
+
+    private function parseVexFixture(): Bom
+    {
+        return $this->subject->parseFromFile(self::fixtureDir() . '/vex-1.6.json');
     }
 
     #[Test]
