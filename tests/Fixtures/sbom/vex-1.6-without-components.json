@@ -1,0 +1,13 @@
+{
+	"bomFormat": "CycloneDX",
+	"specVersion": "1.6",
+	"version": 1,
+	"vulnerabilities": [
+		{
+			"id": "CVE-2026-1234",
+			"analysis": {
+				"state": "in_triage"
+			}
+		}
+	]
+}
