@@ -1790,14 +1790,14 @@ final class CycloneDxParserTest extends TestCase
     #[DataProvider('invalidTimestampProvider')]
     public function parseFromArrayRejectsATimestampThatIsNotRfc3339(string $timestamp): void
     {
-        $this->expectException(SbomParseException::class);
-        $this->expectExceptionMessageMatches('/Error at path: metadata\.timestamp\R.*is not an RFC 3339 timestamp/');
-
-        $this->subject->parseFromArray([
+        $exception = $this->catchParseException([
             'bomFormat' => 'CycloneDX',
             'specVersion' => '1.6',
             'metadata' => ['timestamp' => $timestamp],
         ]);
+
+        self::assertSame(['metadata.timestamp'], array_map(static fn (ParseErrorDetail $detail): string => $detail->path, $exception->details));
+        self::assertStringContainsString('is not an RFC 3339 timestamp', $exception->details[0]->message);
     }
 
     /**
