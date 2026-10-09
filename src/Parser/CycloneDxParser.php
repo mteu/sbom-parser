@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace mteu\SbomParser\Parser;
 
 use CuyZ\Valinor\Mapper\MappingError;
+use CuyZ\Valinor\Mapper\Tree\Message\MessageBuilder;
 use CuyZ\Valinor\Mapper\TreeMapper;
 use CuyZ\Valinor\MapperBuilder;
 use mteu\SbomParser\Entity\Bom;
@@ -56,7 +57,9 @@ final readonly class CycloneDxParser implements Parser
         private CycloneDxParserOptions $options = new CycloneDxParserOptions(),
     ) {
         $this->mapper = (new MapperBuilder())
-            ->supportDateFormats('Y-m-d\TH:i:s.u\Z', 'Y-m-d\TH:i:s\Z', \DateTimeImmutable::ATOM)
+            ->registerConstructor(
+                static fn (string $value): \DateTimeImmutable => self::parseTimestamp($value),
+            )
             ->registerKeyConverter(
                 static fn (string $key): string => self::SCHEMA_KEY_ALIASES[$key] ?? $key,
             )
@@ -163,6 +166,55 @@ final readonly class CycloneDxParser implements Parser
                 }
             }
         }
+    }
+
+    /**
+     * Valinor's built-in date formats match a trailing `Z` only as a literal
+     * letter, so the date ends up in the server's default time zone. Reading
+     * the offset with `P` keeps `Z` as UTC.
+     *
+     * @pure
+     */
+    private static function parseTimestamp(string $value): \DateTimeImmutable
+    {
+        $dateTime = substr($value, 0, 19);
+        $offset = substr($value, 19);
+        $microseconds = '000000';
+
+        if (str_starts_with($offset, '.')) {
+            $digits = strspn($offset, '0123456789', 1);
+            if ($digits === 0) {
+                throw self::invalidTimestamp();
+            }
+
+            // PHP keeps microseconds only. Finer fractions, such as the nanoseconds Go writes, are cut instead of rejected.
+            $microseconds = str_pad(substr($offset, 1, min($digits, 6)), 6, '0');
+            $offset = substr($offset, 1 + $digits);
+        }
+
+        $timestamp = \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.uP', $dateTime . '.' . $microseconds . $offset);
+
+        // createFromFormat() accepts unpadded fields and offsets such as "+0200" or "GMT", and silently rolls an
+        // impossible date such as month 13 over into the next year. Only a result that reads back as the input is
+        // RFC 3339.
+        if ($timestamp === false
+            || $timestamp->format('Y-m-d\TH:i:s') !== $dateTime
+            || !in_array($offset, ['Z', '-00:00', $timestamp->format('P')], true)
+        ) {
+            throw self::invalidTimestamp();
+        }
+
+        return $timestamp;
+    }
+
+    /**
+     * @pure
+     */
+    private static function invalidTimestamp(): \Throwable
+    {
+        return MessageBuilder::newError('Value {source_value} is not an RFC 3339 timestamp.')
+            ->withCode('invalid_timestamp')
+            ->build();
     }
 
     /** @codeCoverageIgnore */

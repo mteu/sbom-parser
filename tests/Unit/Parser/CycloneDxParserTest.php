@@ -1568,7 +1568,7 @@ final class CycloneDxParserTest extends TestCase
         $vulnerabilities = $bom->vulnerabilities ?? [];
         self::assertCount(1, $vulnerabilities);
         self::assertSame('Disable the affected feature flag.', $vulnerabilities[0]->workaround);
-        self::assertSame('2026-03-01T10:00:00+00:00', $vulnerabilities[0]->rejected?->format(\DateTimeInterface::ATOM));
+        self::assertSame('2026-03-01T11:00:00.250000+01:00', $vulnerabilities[0]->rejected?->format('Y-m-d\TH:i:s.uP'));
     }
 
     #[Test]
@@ -1731,6 +1731,77 @@ final class CycloneDxParserTest extends TestCase
                 ['id' => 'CVE-2026-0001', 'analysis' => ['state' => 'in_triage']],
                 ['id' => 'CVE-2026-0002', 'analysis' => $analysis],
             ],
+        ]);
+    }
+
+    /**
+     * @return \Generator<string, array{string, string}>
+     */
+    public static function rfc3339TimestampProvider(): \Generator
+    {
+        yield 'Z' => ['2026-10-01T09:15:00Z', '2026-10-01T09:15:00.000000+00:00'];
+        yield 'numeric offset' => ['2026-10-01T11:15:00+02:00', '2026-10-01T09:15:00.000000+00:00'];
+        yield 'fraction with Z' => ['2026-10-01T09:15:00.5Z', '2026-10-01T09:15:00.500000+00:00'];
+        yield 'fraction with offset' => ['2026-10-01T11:15:00.123+02:00', '2026-10-01T09:15:00.123000+00:00'];
+        yield 'fraction with negative offset' => ['2026-10-01T04:15:00.123456-05:00', '2026-10-01T09:15:00.123456+00:00'];
+        yield 'nanoseconds are cut to microseconds' => ['2026-10-01T09:15:00.123456789Z', '2026-10-01T09:15:00.123456+00:00'];
+        yield 'unknown local offset' => ['2026-10-01T09:15:00-00:00', '2026-10-01T09:15:00.000000+00:00'];
+    }
+
+    #[Test]
+    #[DataProvider('rfc3339TimestampProvider')]
+    public function parseFromArrayReadsAnRfc3339TimestampIndependentOfTheDefaultTimeZone(string $timestamp, string $expectedUtc): void
+    {
+        $defaultTimeZone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+
+        try {
+            $bom = $this->subject->parseFromArray([
+                'bomFormat' => 'CycloneDX',
+                'specVersion' => '1.6',
+                'metadata' => ['timestamp' => $timestamp],
+            ]);
+        } finally {
+            date_default_timezone_set($defaultTimeZone);
+        }
+
+        self::assertSame(
+            $expectedUtc,
+            $bom->metadata?->timestamp?->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s.uP'),
+        );
+    }
+
+    /**
+     * @return \Generator<string, array{string}>
+     */
+    public static function invalidTimestampProvider(): \Generator
+    {
+        yield 'no offset' => ['2026-10-01T09:15:00'];
+        yield 'space instead of T' => ['2026-10-01 09:15:00Z'];
+        yield 'date only' => ['2026-10-01'];
+        yield 'month 13' => ['2026-13-01T09:15:00Z'];
+        yield 'day 32' => ['2026-10-32T09:15:00Z'];
+        yield 'empty fraction' => ['2026-10-01T09:15:00.Z'];
+        yield 'unpadded fields' => ['2026-1-01T09:15:00Z'];
+        yield 'leap second' => ['2026-12-31T23:59:60Z'];
+        yield 'lowercase z' => ['2026-10-01T09:15:00z'];
+        yield 'offset without colon' => ['2026-10-01T09:15:00+0200'];
+        yield 'offset in hours only' => ['2026-10-01T09:15:00+02'];
+        yield 'time zone abbreviation' => ['2026-10-01T09:15:00GMT'];
+        yield 'trailing text' => ['2026-10-01T09:15:00Z trailing'];
+    }
+
+    #[Test]
+    #[DataProvider('invalidTimestampProvider')]
+    public function parseFromArrayRejectsATimestampThatIsNotRfc3339(string $timestamp): void
+    {
+        $this->expectException(SbomParseException::class);
+        $this->expectExceptionMessageMatches('/Error at path: metadata\.timestamp\R.*is not an RFC 3339 timestamp/');
+
+        $this->subject->parseFromArray([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'metadata' => ['timestamp' => $timestamp],
         ]);
     }
 
