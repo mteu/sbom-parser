@@ -23,8 +23,6 @@ declare(strict_types=1);
 
 namespace mteu\SbomParser\Tests\Integration;
 
-namespace mteu\SbomParser\Tests\Integration;
-
 use mteu\SbomParser\Entity\Vulnerability\ImpactAnalysisJustification;
 use mteu\SbomParser\Entity\Vulnerability\ImpactAnalysisResponse;
 use mteu\SbomParser\Entity\Vulnerability\ImpactAnalysisState;

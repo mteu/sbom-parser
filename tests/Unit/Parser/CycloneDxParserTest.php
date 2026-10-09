@@ -1735,35 +1735,54 @@ final class CycloneDxParserTest extends TestCase
     }
 
     /**
-     * @return \Generator<string, array{array<string, mixed>}>
+     * @return \Generator<string, array{array<string, mixed>, ImpactAnalysisState, ImpactAnalysisJustification|null, list<ImpactAnalysisResponse>|null}>
      */
     public static function everyAnalysisValueProvider(): \Generator
     {
         foreach (ImpactAnalysisState::cases() as $state) {
-            yield 'state ' . $state->value => [['state' => $state->value]];
+            yield 'state ' . $state->value => [['state' => $state->value], $state, null, null];
         }
         foreach (ImpactAnalysisJustification::cases() as $justification) {
-            yield 'justification ' . $justification->value => [['state' => 'not_affected', 'justification' => $justification->value]];
+            yield 'justification ' . $justification->value => [
+                ['state' => 'not_affected', 'justification' => $justification->value],
+                ImpactAnalysisState::NOT_AFFECTED,
+                $justification,
+                null,
+            ];
         }
         foreach (ImpactAnalysisResponse::cases() as $response) {
-            yield 'response ' . $response->value => [['state' => 'exploitable', 'response' => [$response->value]]];
+            yield 'response ' . $response->value => [
+                ['state' => 'exploitable', 'response' => [$response->value]],
+                ImpactAnalysisState::EXPLOITABLE,
+                null,
+                [$response],
+            ];
         }
     }
 
     /**
      * @param array<string, mixed> $analysis
+     * @param list<ImpactAnalysisResponse>|null $expectedResponse
      */
     #[Test]
     #[DataProvider('everyAnalysisValueProvider')]
-    public function parseFromArrayAcceptsEveryAnalysisValueOfTheVocabulary(array $analysis): void
-    {
+    public function parseFromArrayMapsEveryAnalysisValueOfTheVocabularyToItsEnumCase(
+        array $analysis,
+        ImpactAnalysisState $expectedState,
+        ?ImpactAnalysisJustification $expectedJustification,
+        ?array $expectedResponse,
+    ): void {
         $bom = $this->subject->parseFromArray([
             'bomFormat' => 'CycloneDX',
             'specVersion' => '1.6',
             'vulnerabilities' => [['id' => 'CVE-2026-0001', 'analysis' => $analysis]],
         ]);
 
-        self::assertNotNull(($bom->vulnerabilities ?? [])[0]->analysis?->state);
+        $parsed = ($bom->vulnerabilities ?? [])[0]->analysis;
+        self::assertNotNull($parsed);
+        self::assertSame($expectedState, $parsed->state);
+        self::assertSame($expectedJustification, $parsed->justification);
+        self::assertSame($expectedResponse, $parsed->response);
     }
 
     private function parseVexFixture(): Bom
