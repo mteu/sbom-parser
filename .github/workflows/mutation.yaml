@@ -1,0 +1,84 @@
+name: Mutation tests
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/Unit/**'
+      - 'tests/Fixtures/**'
+      - 'tests/Mutation/**'
+      - 'infection.json5'
+      - 'composer.json'
+      - 'composer.lock'
+      - '.github/workflows/mutation.yaml'
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - 'src/**'
+      - 'tests/Unit/**'
+      - 'tests/Fixtures/**'
+      - 'tests/Mutation/**'
+      - 'infection.json5'
+      - 'composer.json'
+      - 'composer.lock'
+      - '.github/workflows/mutation.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  mutation:
+    name: Mutation tests (${{ github.event_name == 'pull_request' && 'changed lines' || 'full' }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      # Prepare environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: "8.5"
+          tools: composer:v2
+          coverage: pcov
+
+      # Install dependencies
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+
+      # Run mutation tests
+      - name: Run mutation tests on changed lines
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: >-
+          composer test:mutation --
+          --threads=2
+          --git-diff-lines
+          --git-diff-base="origin/${BASE_REF}"
+          --min-msi=100
+          --min-covered-msi=100
+          --ignore-msi-with-no-mutations
+          --logger-github
+
+      - name: Run mutation tests on full source
+        if: github.event_name != 'pull_request'
+        run: composer test:mutation -- --threads=2 --logger-github
+
+      # Upload artifact
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: mutation-report
+          path: .build/infection/
+          if-no-files-found: ignore
+          retention-days: 7

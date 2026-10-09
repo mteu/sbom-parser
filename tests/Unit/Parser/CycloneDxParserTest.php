@@ -40,6 +40,7 @@ use mteu\SbomParser\Entity\Vulnerability\ImpactAnalysisResponse;
 use mteu\SbomParser\Entity\Vulnerability\ImpactAnalysisState;
 use mteu\SbomParser\Entity\Vulnerability\Vulnerability;
 use mteu\SbomParser\Entity\Vulnerability\VulnerabilityAffects;
+use mteu\SbomParser\Exception\ParseErrorDetail;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
@@ -57,6 +58,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CycloneDxParser::class)]
 #[CoversClass(CycloneDxParserOptions::class)]
 #[CoversClass(SbomParseException::class)]
+#[CoversClass(ParseErrorDetail::class)]
 final class CycloneDxParserTest extends TestCase
 {
     private static function fixtureDir(): string
@@ -1407,32 +1409,6 @@ final class CycloneDxParserTest extends TestCase
     }
 
     #[Test]
-    #[DataProvider('formatValuePreviewDataProvider')]
-    public function formatValuePreviewReturnsCorrectType(mixed $input, string $expected): void
-    {
-        $reflection = new \ReflectionMethod(CycloneDxParser::class, 'formatValuePreview');
-        $result = $reflection->invoke($this->subject, $input);
-
-        self::assertSame($expected, $result);
-    }
-
-    /** @return \Generator<string, array{mixed, string}> */
-    public static function formatValuePreviewDataProvider(): \Generator
-    {
-        yield 'null' => [null, 'null'];
-        yield 'true' => [true, 'true'];
-        yield 'false' => [false, 'false'];
-        yield 'short string' => ['test', 'test'];
-        yield 'long string' => [str_repeat('x', 101), str_repeat('x', 100) . '...'];
-        yield 'integer' => [42, '42'];
-        yield 'float' => [3.14, '3.14'];
-        yield 'empty array' => [[], '[]'];
-        yield 'array with keys' => [['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4], 'array[4] with keys: a, b, c, ...'];
-        yield 'object' => [new \stdClass(), 'object(stdClass)'];
-        yield 'resource' => [tmpfile(), 'unknown'];
-    }
-
-    #[Test]
     public function parseFromArrayHydratesHash(): void
     {
         $bom = $this->subject->parseFromArray([
@@ -1721,10 +1697,7 @@ final class CycloneDxParserTest extends TestCase
     #[DataProvider('unknownAnalysisValueProvider')]
     public function parseFromArrayRejectsAnAnalysisValueOutsideTheVocabularyAndNamesItsPath(array $analysis, string $expectedPath): void
     {
-        $this->expectException(SbomParseException::class);
-        $this->expectExceptionMessage('Error at path: ' . $expectedPath);
-
-        $this->subject->parseFromArray([
+        $exception = $this->catchParseException([
             'bomFormat' => 'CycloneDX',
             'specVersion' => '1.6',
             'vulnerabilities' => [
@@ -1732,6 +1705,28 @@ final class CycloneDxParserTest extends TestCase
                 ['id' => 'CVE-2026-0002', 'analysis' => $analysis],
             ],
         ]);
+
+        self::assertSame([$expectedPath], array_map(static fn (ParseErrorDetail $detail): string => $detail->path, $exception->details));
+        self::assertStringContainsString('Error at path: ' . $expectedPath, $exception->getMessage());
+    }
+
+    #[Test]
+    public function parseFromArrayListsEveryMappingErrorInDocumentOrder(): void
+    {
+        $exception = $this->catchParseException([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [['type' => 'library', 'name' => 'psr7', 'bom-ref' => ['not', 'a', 'string']]],
+            'vulnerabilities' => [['id' => 'CVE-2026-0001', 'analysis' => ['state' => 'resolved_with_hope']]],
+        ]);
+
+        self::assertSame(SbomParseException::CODE_VALIDATION_FAILED, $exception->getCode());
+        self::assertSame(
+            ['components.0.bom-ref', 'vulnerabilities.0.analysis.state'],
+            array_map(static fn (ParseErrorDetail $detail): string => $detail->path, $exception->details),
+        );
+        self::assertStringContainsString("'resolved_with_hope'", $exception->details[1]->message);
+        self::assertStringContainsString('Total errors: 2', $exception->getMessage());
     }
 
     /**
@@ -1806,35 +1801,96 @@ final class CycloneDxParserTest extends TestCase
     }
 
     /**
-     * @return \Generator<string, array{array<string, mixed>}>
+     * @return \Generator<string, array{string, int}>
+     */
+    public static function failureBeforeMappingProvider(): \Generator
+    {
+        yield 'invalid JSON' => ['{', SbomParseException::CODE_INVALID_JSON];
+        yield 'unsupported version' => ['{"bomFormat": "CycloneDX", "specVersion": "0.9"}', SbomParseException::CODE_UNSUPPORTED_VERSION];
+        yield 'node budget' => ['{"bomFormat": "CycloneDX", "specVersion": "1.6", "version": 1}', SbomParseException::CODE_VALIDATION_FAILED];
+    }
+
+    #[Test]
+    #[DataProvider('failureBeforeMappingProvider')]
+    public function parseFailureBeforeMappingCarriesNoDetails(string $json, int $expectedCode): void
+    {
+        $parser = new CycloneDxParser(new CycloneDxParserOptions(maxNodes: 2));
+
+        try {
+            $parser->parseFromJson($json);
+        } catch (SbomParseException $exception) {
+            self::assertSame($expectedCode, $exception->getCode());
+            self::assertSame([], $exception->details);
+
+            return;
+        }
+
+        self::fail('Expected an SbomParseException.');
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function catchParseException(array $data): SbomParseException
+    {
+        try {
+            $this->subject->parseFromArray($data);
+        } catch (SbomParseException $exception) {
+            return $exception;
+        }
+
+        self::fail('Expected an SbomParseException.');
+    }
+
+    /**
+     * @return \Generator<string, array{array<string, mixed>, ImpactAnalysisState, ImpactAnalysisJustification|null, list<ImpactAnalysisResponse>|null}>
      */
     public static function everyAnalysisValueProvider(): \Generator
     {
         foreach (ImpactAnalysisState::cases() as $state) {
-            yield 'state ' . $state->value => [['state' => $state->value]];
+            yield 'state ' . $state->value => [['state' => $state->value], $state, null, null];
         }
         foreach (ImpactAnalysisJustification::cases() as $justification) {
-            yield 'justification ' . $justification->value => [['state' => 'not_affected', 'justification' => $justification->value]];
+            yield 'justification ' . $justification->value => [
+                ['state' => 'not_affected', 'justification' => $justification->value],
+                ImpactAnalysisState::NOT_AFFECTED,
+                $justification,
+                null,
+            ];
         }
         foreach (ImpactAnalysisResponse::cases() as $response) {
-            yield 'response ' . $response->value => [['state' => 'exploitable', 'response' => [$response->value]]];
+            yield 'response ' . $response->value => [
+                ['state' => 'exploitable', 'response' => [$response->value]],
+                ImpactAnalysisState::EXPLOITABLE,
+                null,
+                [$response],
+            ];
         }
     }
 
     /**
      * @param array<string, mixed> $analysis
+     * @param list<ImpactAnalysisResponse>|null $expectedResponse
      */
     #[Test]
     #[DataProvider('everyAnalysisValueProvider')]
-    public function parseFromArrayAcceptsEveryAnalysisValueOfTheVocabulary(array $analysis): void
-    {
+    public function parseFromArrayMapsEveryAnalysisValueOfTheVocabularyToItsEnumCase(
+        array $analysis,
+        ImpactAnalysisState $expectedState,
+        ?ImpactAnalysisJustification $expectedJustification,
+        ?array $expectedResponse,
+    ): void {
         $bom = $this->subject->parseFromArray([
             'bomFormat' => 'CycloneDX',
             'specVersion' => '1.6',
             'vulnerabilities' => [['id' => 'CVE-2026-0001', 'analysis' => $analysis]],
         ]);
 
-        self::assertNotNull(($bom->vulnerabilities ?? [])[0]->analysis?->state);
+        $parsed = ($bom->vulnerabilities ?? [])[0]->analysis;
+        self::assertNotNull($parsed);
+        self::assertSame($expectedState, $parsed->state);
+        self::assertSame($expectedJustification, $parsed->justification);
+        self::assertSame($expectedResponse, $parsed->response);
     }
 
     private function parseVexFixture(): Bom

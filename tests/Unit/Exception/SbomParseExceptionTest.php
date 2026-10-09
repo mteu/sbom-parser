@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace mteu\SbomParser\Tests\Unit\Exception;
 
+use mteu\SbomParser\Exception\ParseErrorDetail;
 use mteu\SbomParser\Exception\SbomParseException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -33,6 +34,7 @@ use PHPUnit\Framework\TestCase;
  * @license GPL-3.0-or-later
  */
 #[CoversClass(SbomParseException::class)]
+#[CoversClass(ParseErrorDetail::class)]
 final class SbomParseExceptionTest extends TestCase
 {
     #[Test]
@@ -55,6 +57,45 @@ final class SbomParseExceptionTest extends TestCase
         self::assertSame(SbomParseException::CODE_VALIDATION_FAILED, $exception->getCode());
         self::assertSame($previous, $exception->getPrevious());
         self::assertStringContainsString('SBOM validation failed: bad shape', $exception->getMessage());
+    }
+
+    #[Test]
+    public function mappingFailedCarriesItsDetailsAndListsThemInTheMessage(): void
+    {
+        $previous = new \LogicException('cause');
+        $details = [
+            new ParseErrorDetail('', 'Cannot be empty.'),
+            new ParseErrorDetail('vulnerabilities.0.analysis.state', "Value 'nope' is not allowed."),
+        ];
+
+        $exception = SbomParseException::mappingFailed($details, $previous);
+
+        self::assertSame($details, $exception->details);
+        self::assertSame(SbomParseException::CODE_VALIDATION_FAILED, $exception->getCode());
+        self::assertSame($previous, $exception->getPrevious());
+        self::assertSame(
+            implode(PHP_EOL, [
+                'SBOM validation failed: Valinor mapping failed with the following errors:',
+                '',
+                '1. Error at path: root',
+                'Cannot be empty.',
+                '',
+                '2. Error at path: vulnerabilities.0.analysis.state',
+                "Value 'nope' is not allowed.",
+                '',
+                'Total errors: 2',
+            ]),
+            $exception->getMessage(),
+        );
+    }
+
+    #[Test]
+    public function namedConstructorsOtherThanMappingFailedCarryNoDetails(): void
+    {
+        self::assertSame([], SbomParseException::invalidJson('boom')->details);
+        self::assertSame([], SbomParseException::validationFailed('bad shape')->details);
+        self::assertSame([], SbomParseException::unsupportedFormat('SPDX')->details);
+        self::assertSame([], SbomParseException::unsupportedVersion('0.9')->details);
     }
 
     #[Test]

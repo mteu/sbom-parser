@@ -28,6 +28,7 @@ use CuyZ\Valinor\Mapper\Tree\Message\MessageBuilder;
 use CuyZ\Valinor\Mapper\TreeMapper;
 use CuyZ\Valinor\MapperBuilder;
 use mteu\SbomParser\Entity\Bom;
+use mteu\SbomParser\Exception\ParseErrorDetail;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 
@@ -95,11 +96,22 @@ final readonly class CycloneDxParser implements Parser
         try {
             return $this->mapper->map(Bom::class, $data);
         } catch (MappingError $e) {
-            throw SbomParseException::validationFailed(
-                $this->formatMappingError($e),
-                $e,
-            );
+            throw SbomParseException::mappingFailed($this->collectErrorDetails($e), $e);
         }
+    }
+
+    /**
+     * @return list<ParseErrorDetail>
+     */
+    private function collectErrorDetails(MappingError $error): array
+    {
+        $details = [];
+
+        foreach ($error->messages()->errors() as $nodeMessage) {
+            $details[] = new ParseErrorDetail($nodeMessage->path(), $nodeMessage->toString());
+        }
+
+        return $details;
     }
 
     /**
@@ -466,84 +478,5 @@ final readonly class CycloneDxParser implements Parser
         if (!$supported) {
             throw SbomParseException::unsupportedVersion($specVersion);
         }
-    }
-
-    private function formatMappingError(MappingError $error): string
-    {
-        $messages = [];
-        $messages[] = 'Valinor mapping failed with the following errors:';
-        $messages[] = '';
-
-        $errorNumber = 1;
-        foreach ($error->messages() as $nodeMessage) {
-
-            $path = $nodeMessage->path();
-            $pathString = $path === '' ? 'root' : $path;
-
-            $messages[] = sprintf(
-                '%d. Error at path: %s',
-                $errorNumber++,
-                $pathString
-            );
-
-            $messages[] = $nodeMessage . ' ';
-
-            // Show the actual value if available
-            if ($nodeMessage->sourceValue() !== '') {
-                $value = $nodeMessage->sourceValue();
-                $valueType = get_debug_type($value);
-                $valuePreview = $this->formatValuePreview($value);
-                $messages[] = sprintf('   Value: %s (%s)', $valuePreview, $valueType);
-            }
-
-            $messages[] = '';
-        }
-
-        $messages[] = sprintf(
-            'Total errors: %d',
-            $errorNumber - 1,
-        );
-
-        return implode(PHP_EOL, $messages);
-    }
-
-    private function formatValuePreview(mixed $value): string
-    {
-        if ($value === null) {
-            return 'null';
-        }
-
-        if (is_bool($value)) {
-            return $value ? 'true' : 'false';
-        }
-
-        if (is_string($value)) {
-            return strlen($value) > 100 ? substr($value, 0, 100) . '...' : $value;
-        }
-
-        if (is_numeric($value)) {
-            return (string)$value;
-        }
-
-        if (is_array($value)) {
-            $count = count($value);
-            if ($count === 0) {
-                return '[]';
-            }
-
-            $keys = array_keys($value);
-            $keyPreview = implode(', ', array_slice($keys, 0, 3));
-            if ($count > 3) {
-                $keyPreview .= ', ...';
-            }
-
-            return sprintf('array[%d] with keys: %s', $count, $keyPreview);
-        }
-
-        if (is_object($value)) {
-            return sprintf('object(%s)', $value::class);
-        }
-
-        return 'unknown';
     }
 }

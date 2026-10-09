@@ -118,7 +118,7 @@ foreach ($bom->vulnerabilities ?? [] as $vulnerability) {
 ```
 
 The vocabulary is the same in every supported spec version. A value outside
-it fails the parse with an `SbomParseException` whose message names the path,
+it fails the parse with an `SbomParseException` whose `$details` name the path,
 such as `vulnerabilities.2.analysis.state`.
 
 A VEX document may carry no `components` at all. It parses like any other
@@ -224,3 +224,19 @@ try {
     error_log('SBOM parsing failed: ' . $e->getMessage());
 }
 ```
+The message format may change. When the  document itself is wrong, read
+`$e->details` instead since it lists one `ParseErrorDetail` per value that
+could not be mapped, in document order.
+
+```php
+foreach ($e->details as $detail) {
+    $detail->path;    // e.g. "vulnerabilities.2.analysis.state"; "" for the document root
+    $detail->message; // e.g. "Value 'nope' does not match any of ..."
+}
+```
+
+The path uses the document's own key names, such as `components.0.bom-ref`.
+The message may quote the value from the document, so escape it before
+rendering! `$details` is empty when parsing failed before mapping. Invalid
+JSON, an unsupported format or version, a file that cannot be read, or a
+document over the size or node limits.
