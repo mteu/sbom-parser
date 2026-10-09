@@ -131,7 +131,7 @@
 			"bom-ref": "vuln-1",
 			"id": "CVE-2026-0001",
 			"workaround": "Disable the affected feature flag.",
-			"rejected": "2026-03-01T10:00:00Z",
+			"rejected": "2026-03-01T11:00:00.250+01:00",
 			"proofOfConcept": {
 				"reproductionSteps": "Send a crafted SBOM to the upload endpoint.",
 				"environment": "PHP 8.4 on Linux",

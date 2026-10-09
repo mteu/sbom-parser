@@ -124,6 +124,13 @@ such as `vulnerabilities.2.analysis.state`.
 A VEX document may carry no `components` at all. It parses like any other
 document, and `Bom::hasComponents()` returns `false`.
 
+### Timestamps
+
+Every date field is a `\DateTimeImmutable` parsed from an RFC 3339 timestamp,
+as the schemas require: `2026-10-01T09:15:00Z`, `2026-10-01T11:15:00+02:00`, or
+either with a fraction of a second. The parsed date keeps the offset from the
+document, and `Z` means UTC whatever the server's default time zone is.
+
 ## File Validation
 
 The parser includes validation:
