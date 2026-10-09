@@ -31,7 +31,23 @@
 composer test                    # All tests
 composer test:unit               # Unit tests only
 composer test:coverage           # With coverage
+composer test:mutation           # Mutation tests (needs pcov or Xdebug)
 ```
+
+Mutation testing runs [Infection](https://infection.github.io/) against the
+unit suite. On pull requests, CI mutates only the changed lines and every
+mutant must be killed. On `main`, it mutates all of `src/` against the
+thresholds in `infection.json5`. Changes that cannot affect the result
+(docs, other workflows, integration tests) skip the workflow. To check your
+branch the same way a pull request does:
+
+```bash
+composer test:mutation -- --git-diff-lines --git-diff-base=origin/main --min-msi=100 --min-covered-msi=100
+```
+
+Reports land in `.build/infection/`. If a mutant cannot change observable
+behaviour (an equivalent mutant), ignore it in `infection.json5` and write
+down why.
 
 Run specific tests:
 ```bash
