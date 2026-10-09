@@ -30,6 +30,19 @@ final class SbomParseException extends \Exception
     public const int CODE_UNSUPPORTED_FORMAT = 1778272292;
     public const int CODE_UNSUPPORTED_VERSION = 1778272293;
 
+    /**
+     * @param list<ParseErrorDetail> $details one entry per value that could not be mapped; empty
+     *     when parsing failed before mapping. Unlike the message, this is meant to be read by code.
+     */
+    public function __construct(
+        string $message = '',
+        int $code = 0,
+        ?\Throwable $previous = null,
+        public readonly array $details = [],
+    ) {
+        parent::__construct($message, $code, $previous);
+    }
+
     public static function invalidJson(string $message, ?\Throwable $previous = null): self
     {
         return new self(sprintf('Invalid JSON: %s', $message), self::CODE_INVALID_JSON, $previous);
@@ -38,6 +51,29 @@ final class SbomParseException extends \Exception
     public static function validationFailed(string $message, ?\Throwable $previous = null): self
     {
         return new self(sprintf('SBOM validation failed: %s', $message), self::CODE_VALIDATION_FAILED, $previous);
+    }
+
+    /**
+     * @param list<ParseErrorDetail> $details
+     */
+    public static function mappingFailed(array $details, ?\Throwable $previous = null): self
+    {
+        $lines = ['Valinor mapping failed with the following errors:', ''];
+
+        foreach ($details as $index => $detail) {
+            $lines[] = sprintf('%d. Error at path: %s', $index + 1, $detail->path === '' ? 'root' : $detail->path);
+            $lines[] = $detail->message;
+            $lines[] = '';
+        }
+
+        $lines[] = sprintf('Total errors: %d', count($details));
+
+        return new self(
+            sprintf('SBOM validation failed: %s', implode(PHP_EOL, $lines)),
+            self::CODE_VALIDATION_FAILED,
+            $previous,
+            $details,
+        );
     }
 
     public static function unsupportedFormat(string $format): self
