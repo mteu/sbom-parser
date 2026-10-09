@@ -1,0 +1,37 @@
+{
+    "$schema": ".build/vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": [
+            "src"
+        ]
+    },
+    "timeout": 10,
+    "tmpDir": ".build/cache/infection",
+    "phpUnit": {
+        "configDir": "tests/Mutation"
+    },
+    "logs": {
+        "text": ".build/infection/infection.log",
+        "html": ".build/infection/infection.html",
+        "summary": ".build/infection/summary.log"
+    },
+    "minMsi": 100,
+    "minCoveredMsi": 100,
+    "mutators": {
+        "@default": true,
+        // BomComponentIndex memoises results for immutable Bom instances. Skipping
+        // or resetting the cache yields an identical result, so these mutants are
+        // equivalent and only detectable by reflecting on private static state.
+        "AssignCoalesce": {
+            "ignore": [
+                "mteu\\SbomParser\\Index\\BomComponentIndex"
+            ]
+        },
+        "ReturnRemoval": {
+            "ignore": [
+                "mteu\\SbomParser\\Index\\BomComponentIndex::flatten",
+                "mteu\\SbomParser\\Index\\BomComponentIndex::byPurl"
+            ]
+        }
+    }
+}

@@ -263,10 +263,7 @@ final class BomTest extends TestCase
 
         $result = $bom->findComponentsByType(ComponentType::LIBRARY);
 
-        self::assertCount(2, $result);
-        self::assertContains($library1, $result);
-        self::assertContains($library2, $result);
-        self::assertNotContains($application, $result);
+        self::assertSame([$library1, $library2], $result);
     }
 
     #[Test]
@@ -282,8 +279,7 @@ final class BomTest extends TestCase
 
         $result = $bom->findComponentsByType(ComponentType::LIBRARY);
 
-        self::assertCount(1, $result);
-        self::assertSame($nestedLibrary, array_values($result)[0]);
+        self::assertSame([$nestedLibrary], $result);
     }
 
     #[Test]
