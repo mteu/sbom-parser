@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Infection only discovers phpunit.xml(.dist) by name, so it cannot use phpunit.unit.xml directly.
+    The unit suite is the only suite that executes src/, hence the only one worth mutating against.
+-->
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../.build/vendor/phpunit/phpunit/phpunit.xsd"
+    bootstrap="../../.build/vendor/autoload.php"
+    cacheDirectory="../../.build/cache/phpunit-mutation"
+    executionOrder="random"
+    colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit tests">
+            <directory>../Unit</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">../../src</directory>
+        </include>
+    </source>
+</phpunit>
