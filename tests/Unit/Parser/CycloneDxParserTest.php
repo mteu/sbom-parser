@@ -44,6 +44,7 @@ use mteu\SbomParser\Exception\ParseErrorDetail;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
 use mteu\SbomParser\Parser\CycloneDxParser;
+use mteu\SbomParser\Parser\Mapping\EntityEnumConstructors;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -59,6 +60,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(CycloneDxParserOptions::class)]
 #[CoversClass(SbomParseException::class)]
 #[CoversClass(ParseErrorDetail::class)]
+#[CoversClass(EntityEnumConstructors::class)]
 final class CycloneDxParserTest extends TestCase
 {
     private static function fixtureDir(): string
@@ -1727,6 +1729,23 @@ final class CycloneDxParserTest extends TestCase
         );
         self::assertStringContainsString("'resolved_with_hope'", $exception->details[1]->message);
         self::assertStringContainsString('Total errors: 2', $exception->getMessage());
+    }
+
+    #[Test]
+    public function parseFromArrayRejectsAnUnknownEnumValueAndListsTheAllowedOnes(): void
+    {
+        $exception = $this->catchParseException([
+            'bomFormat' => 'CycloneDX',
+            'specVersion' => '1.6',
+            'components' => [[
+                'type' => 'library',
+                'name' => 'psr7',
+                'hashes' => [['alg' => 'SHA-256', 'content' => 'abc'], ['alg' => 'CRC32', 'content' => 'def']],
+            ]],
+        ]);
+
+        self::assertSame(['components.0.hashes.1.alg'], array_map(static fn (ParseErrorDetail $detail): string => $detail->path, $exception->details));
+        self::assertStringStartsWith("Value 'CRC32' does not match any of 'MD5', 'SHA-1', ", $exception->details[0]->message);
     }
 
     /**

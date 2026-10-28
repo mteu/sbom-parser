@@ -31,6 +31,7 @@ use mteu\SbomParser\Entity\Bom;
 use mteu\SbomParser\Exception\ParseErrorDetail;
 use mteu\SbomParser\Exception\SbomParseException;
 use mteu\SbomParser\Parser\Configuration\CycloneDxParserOptions;
+use mteu\SbomParser\Parser\Mapping\EntityEnumConstructors;
 
 /**
  * Type-Safe SBOM Parser.
@@ -60,6 +61,7 @@ final readonly class CycloneDxParser implements Parser
         $this->mapper = (new MapperBuilder())
             ->registerConstructor(
                 static fn (string $value): \DateTimeImmutable => self::parseTimestamp($value),
+                ...(new EntityEnumConstructors())->list(),
             )
             ->registerKeyConverter(
                 static fn (string $key): string => self::SCHEMA_KEY_ALIASES[$key] ?? $key,
